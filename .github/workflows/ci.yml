@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  PYTHONUNBUFFERED: 1
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+
+      - name: Install backend requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Install frontend requirements
+        run: |
+          pip install -r frontend/requirements.txt
+
+      - name: Run preprocessing
+        run: |
+          python scripts/preprocess.py
+
+      - name: Run training
+        run: |
+          python scripts/train.py
+
+      - name: Register best model
+        run: |
+          python scripts/register_best_model.py
+
+      - name: Smoke check backend (optional)
+        run: |
+          # This will succeed harmlessly even if service not available on runner.
+          curl -sS http://localhost:8000/health || true
+
+      - name: Build and (optionally) deploy with Docker Compose
+        if: github.event_name == 'workflow_dispatch' || github.event.inputs.deploy == 'true'
+        run: |
+          # NOTE: Running docker-compose on GitHub-hosted runners requires extra setup
+          # For production deploys, prefer building/pushing images to a registry and
+          # deploying from your infrastructure or a self-hosted runner.
+          docker compose build
+          docker compose up -d
+
+# Secrets to configure in the repository settings (if you use DagsHub/MLflow):
+# - DAGSHUB_TOKEN
+# - DAGSHUB_USERNAME
+# - DAGSHUB_REPO_NAME
