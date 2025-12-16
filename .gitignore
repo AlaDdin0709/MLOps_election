@@ -55,6 +55,12 @@ logs/
 /models/*.zip
 /models/tunbert_final_model/
 
+# Ignore full models directory (avoid pushing model artifacts)
+/models/
+
+# Model registry (pickles/artifacts)
+/notebooks/model_registry/
+
 # Outputs
 *.log
 *.html
