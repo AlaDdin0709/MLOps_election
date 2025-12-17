@@ -19,8 +19,16 @@ DEST_DIR = BASE_DIR / 'model_registry' / 'Best_Election_Model'
 DEST_PATH = DEST_DIR / 'production.pkl'
 
 
+
 def main():
     print(f"🔧 Configuring MLflow -> {MLFLOW_TRACKING_URI}")
+    
+    # Configure DagsHub authentication if token is available
+    DAGSHUB_TOKEN = os.getenv('DAGSHUB_TOKEN', '')
+    if DAGSHUB_TOKEN:
+        os.environ['MLFLOW_TRACKING_USERNAME'] = DAGSHUB_USERNAME
+        os.environ['MLFLOW_TRACKING_PASSWORD'] = DAGSHUB_TOKEN
+    
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
     # Find experiment

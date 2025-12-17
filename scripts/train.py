@@ -63,20 +63,28 @@ def setup_mlflow():
     """Configure MLflow tracking avec DagsHub"""
     DAGSHUB_USERNAME = os.getenv('DAGSHUB_USERNAME', 'AlaDdin0709')
     DAGSHUB_REPO = os.getenv('DAGSHUB_REPO_NAME', 'mlops_election')
+    DAGSHUB_TOKEN = os.getenv('DAGSHUB_TOKEN', '')
+    
     MLFLOW_TRACKING_URI = os.getenv(
         'MLFLOW_TRACKING_URI',
         f"https://dagshub.com/{DAGSHUB_USERNAME}/{DAGSHUB_REPO}.mlflow"
     )
     
-    print("🔧 Configuration MLflow & DagsHub")
+    print("\n🔧 Configuration MLflow & DagsHub")
     print("-" * 80)
     
-    try:
-        # Initialiser DagsHub
-        dagshub.init(repo_owner=DAGSHUB_USERNAME, repo_name=DAGSHUB_REPO, mlflow=True)
-        print(f"✅ DagsHub initialisé: {DAGSHUB_USERNAME}/{DAGSHUB_REPO}")
-    except Exception as e:
-        print(f"⚠️  DagsHub warning: {e}")
+    # Configure DagsHub authentication if token is available
+    if DAGSHUB_TOKEN:
+        os.environ['MLFLOW_TRACKING_USERNAME'] = DAGSHUB_USERNAME
+        os.environ['MLFLOW_TRACKING_PASSWORD'] = DAGSHUB_TOKEN
+        print(f"✅ DagsHub authentication configured with token")
+    else:
+        # Only try dagshub.init() if no token (local development)
+        try:
+            dagshub.init(repo_owner=DAGSHUB_USERNAME, repo_name=DAGSHUB_REPO, mlflow=True)
+            print(f"✅ DagsHub initialisé: {DAGSHUB_USERNAME}/{DAGSHUB_REPO}")
+        except Exception as e:
+            print(f"⚠️  DagsHub warning: {e}")
     
     # Configurer MLflow
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
