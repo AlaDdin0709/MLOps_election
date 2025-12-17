@@ -93,6 +93,11 @@ jobs:
         run: |
           curl -sS http://localhost:8000/health
 
+      - name: Stop uvicorn (free port 8000)
+        run: |
+          pkill -f uvicorn || true
+          sleep 2
+
       - name: Build and deploy with Docker Compose (self-hosted)
         run: |
           docker compose build
