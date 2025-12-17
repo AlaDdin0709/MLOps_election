@@ -8,12 +8,14 @@ scipy==1.13.1
 mlflow==3.1.4
 dagshub==0.6.4
 
-# Data Versioning
-dvc>=3.0.0
-dvc-s3>=2.23.0
+# Data Versioning (pinned to avoid resolver issues)
+dvc==3.59.1
+dvc-s3==3.2.0
+tqdm==4.67.1
 
 # Data Processing
 openpyxl==3.1.5
 
 # Utilities
 python-dotenv==1.1.1
+
