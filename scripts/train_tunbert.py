@@ -37,9 +37,9 @@ import dagshub
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-PROCESSOR_DIR = BASE_DIR / 'processors'
-MODELS_DIR = BASE_DIR / 'models'
-TUNBERT_DIR = MODELS_DIR / 'tunbert_final_model'
+# Model registry for deployment artifacts
+MODEL_REGISTRY_DIR = BASE_DIR / 'model_registry' / 'Best_Election_Model'
+TUNBERT_DIR = BASE_DIR / 'tunbert_finetuned'  # Temporary training directory
 TUNBERT_DIR.mkdir(parents=True, exist_ok=True)
 
 print("="*80)
@@ -100,24 +100,33 @@ def setup_device():
 # ============================================================================
 
 def load_cleaned_texts():
-    """Charge les textes nettoyés"""
-    print("📦 Chargement des textes nettoyés")
+    """Charge et nettoie les textes depuis les données brutes"""
+    print("📦 Chargement et nettoyage des textes")
     print("-" * 80)
     
-    texts_path = PROCESSOR_DIR / 'cleaned_texts.pkl'
-    if not texts_path.exists():
-        raise FileNotFoundError(
-            f"Textes nettoyés non trouvés: {texts_path}\n"
-            "Exécutez d'abord: python scripts/preprocess.py"
-        )
+    # Import preprocessing module
+    import sys
+    SCRIPTS_DIR = Path(__file__).resolve().parent
+    if str(SCRIPTS_DIR) not in sys.path:
+        sys.path.insert(0, str(SCRIPTS_DIR))
     
-    with open(texts_path, 'rb') as f:
-        data = pickle.load(f)
+    try:
+        import preprocess
+    except Exception as e:
+        raise RuntimeError(f"Could not import preprocess module: {e}")
     
-    comments = data['cleaned']
-    labels = data['labels']
+    # Load and preprocess data
+    data_path = preprocess.DATA_DIR / 'version1.xlsx'
+    if not data_path.exists():
+        raise FileNotFoundError(f"Data file not found: {data_path}")
     
-    print(f"✅ Textes chargés: {len(comments)} commentaires")
+    df = preprocess.load_and_explore_data(data_path)
+    df = preprocess.preprocess_text(df, text_col='comments')
+    
+    comments = df['cleaned'].tolist()
+    labels = df['target'].tolist()
+    
+    print(f"✅ Textes chargés et nettoyés: {len(comments)} commentaires")
     print(f"   Distribution: {pd.Series(labels).value_counts().to_dict()}")
     print()
     
@@ -333,22 +342,38 @@ def train_tunbert(model, tokenizer, train_dataset, val_dataset, test_dataset, de
         print(f"\n📊 Matrice de confusion:")
         print(cm)
         
-        # Sauvegarder confusion matrix
+        # Sauvegarder confusion matrix (in-memory, log to MLflow)
         cm_df = pd.DataFrame(cm, index=['Actual_0', 'Actual_1'], columns=['Pred_0', 'Pred_1'])
-        cm_path = MODELS_DIR / 'cm_tunbert.csv'
-        cm_df.to_csv(cm_path)
-        mlflow.log_artifact(str(cm_path))
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as tmp:
+            tmp_path = tmp.name
+            cm_df.to_csv(tmp_path)
+        
+        try:
+            mlflow.log_artifact(tmp_path, artifact_path='confusion_matrices')
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except (PermissionError, OSError):
+                pass  # File will be cleaned up by OS eventually
         
         # Classification report
         report = classification_report(labels, preds, target_names=['Classe 0', 'Classe 1'], digits=4)
         print(f"\n📋 Classification Report:")
         print(report)
         
-        # Sauvegarder report
-        report_path = MODELS_DIR / 'classification_report_tunbert.txt'
-        with open(report_path, 'w', encoding='utf-8') as f:
-            f.write(report)
-        mlflow.log_artifact(str(report_path))
+        # Sauvegarder report (in-memory, log to MLflow)
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8') as tmp:
+            tmp_path = tmp.name
+            tmp.write(report)
+        
+        try:
+            mlflow.log_artifact(tmp_path, artifact_path='reports')
+        finally:
+            try:
+                os.unlink(tmp_path)
+            except (PermissionError, OSError):
+                pass  # File will be cleaned up by OS eventually
         
         # ===== SAUVEGARDE DU MODÈLE =====
         print("\n💾 Sauvegarde du modèle TunBERT")

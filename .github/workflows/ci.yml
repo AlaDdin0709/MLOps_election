@@ -25,11 +25,16 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Cache pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+      - name: Install DVC
+        run: |
+          pip install dvc dvc-s3
+
+      - name: Pull data from DVC
+        run: |
+          dvc pull data/version1.xlsx
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Install backend requirements
         run: |
@@ -40,33 +45,46 @@ jobs:
         run: |
           pip install -r frontend/requirements.txt
 
-      - name: Run preprocessing
-        run: |
-          python scripts/preprocess.py
-
       - name: Run training
         run: |
           python scripts/train.py
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          DAGSHUB_REPO_NAME: ${{ secrets.DAGSHUB_REPO_NAME }}
 
       - name: Register best model
         run: |
           python scripts/register_best_model.py
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          DAGSHUB_REPO_NAME: ${{ secrets.DAGSHUB_REPO_NAME }}
 
-      - name: Smoke check backend (optional)
+      - name: Install uvicorn (for smoke tests)
         run: |
-          # This will succeed harmlessly even if service not available on runner.
-          curl -sS http://localhost:8000/health || true
+          pip install "uvicorn[standard]"
 
-      - name: Build and (optionally) deploy with Docker Compose
-        if: github.event_name == 'workflow_dispatch' || github.event.inputs.deploy == 'true'
+      - name: Start backend (uvicorn)
         run: |
-          # NOTE: Running docker-compose on GitHub-hosted runners requires extra setup
-          # For production deploys, prefer building/pushing images to a registry and
-          # deploying from your infrastructure or a self-hosted runner.
+          nohup uvicorn backend.src.api:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
+
+      - name: Wait for backend health
+        run: |
+          for i in {1..30}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo 000)
+            echo "Attempt $i: $code"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep 2
+          done
+          echo "Backend did not become healthy"; exit 1
+
+      - name: Smoke check backend endpoints
+        run: |
+          curl -sS http://localhost:8000/health
+
+      - name: Build and deploy with Docker Compose (self-hosted)
+        run: |
           docker compose build
           docker compose up -d
 
-# Secrets to configure in the repository settings (if you use DagsHub/MLflow):
-# - DAGSHUB_TOKEN
-# - DAGSHUB_USERNAME
-# - DAGSHUB_REPO_NAME

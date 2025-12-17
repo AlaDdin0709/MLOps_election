@@ -46,20 +46,12 @@ artifacts/
 tunbert_finetuned/
 logs/
 
-# Data & Models (versionnés par DVC)
+# Data & Models (versioned by DVC or in model_registry)
 /data/*.xlsx
 /data/*.csv
-/processors/
-/processors/*.pkl
-/models/*.pkl
-/models/*.zip
-/models/tunbert_final_model/
 
-# Ignore full models directory (avoid pushing model artifacts)
-/models/
-
-# Model registry (pickles/artifacts)
-/notebooks/model_registry/
+# Model registry (deployment artifacts)
+/model_registry/
 
 # Outputs
 *.log

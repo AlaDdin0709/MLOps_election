@@ -24,23 +24,26 @@ def load_local_model():
     global model, model_metadata
     try:
         root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-        base = os.path.join(root, 'notebooks', 'model_registry')
+        base = os.path.join(root, 'model_registry')
         model_name = 'Best_Election_Model'
         model_dir = os.path.join(base, model_name)
         prod_path = os.path.join(model_dir, 'production.pkl')
         if os.path.exists(prod_path):
             with open(prod_path, 'rb') as f:
                 model = pickle.load(f)
-        # Try to load a saved vectorizer from the processors folder (TF-IDF)
+        
+        # Load vectorizer from model_registry (co-located with model)
         try:
-            proc_vec_path = os.path.join(root, 'processors', 'tfidf_vectorizer.pkl')
-            if os.path.exists(proc_vec_path):
+            vec_path = os.path.join(model_dir, 'tfidf_vectorizer.pkl')
+            if os.path.exists(vec_path):
                 global vectorizer
-                with open(proc_vec_path, 'rb') as vf:
+                with open(vec_path, 'rb') as vf:
                     vectorizer = pickle.load(vf)
-                print('✅ Vectorizer loaded for inference')
+                print('✅ Vectorizer loaded from model_registry')
+            else:
+                print('❌ Vectorizer not found in model_registry - run train.py first')
         except Exception as _e:
-            print('⚠️ Could not load vectorizer:', _e)
+            print('⚠️  Could not load vectorizer:', _e)
         # load metadata if present
         versions = [d for d in os.listdir(model_dir) if os.path.isdir(os.path.join(model_dir, d))]
         if versions:

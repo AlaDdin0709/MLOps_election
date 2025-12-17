@@ -15,7 +15,7 @@ MLFLOW_TRACKING_URI = os.getenv('MLFLOW_TRACKING_URI', f"https://dagshub.com/{DA
 EXPERIMENT_NAME = os.getenv('MLFLOW_EXPERIMENT', 'sentiment_classification_tunisian')
 
 # Destination for local registry
-DEST_DIR = BASE_DIR / 'notebooks' / 'model_registry' / 'Best_Election_Model'
+DEST_DIR = BASE_DIR / 'model_registry' / 'Best_Election_Model'
 DEST_PATH = DEST_DIR / 'production.pkl'
 
 
@@ -105,7 +105,7 @@ def main():
     except Exception as e:
         print(f"⚠️  Registration warning: {e}")
 
-    print("🎉 Done. You can now serve the model from notebooks/model_registry/Best_Election_Model/production.pkl")
+    print("🎉 Done. You can now serve the model from model_registry/Best_Election_Model/production.pkl")
     return 0
 
 

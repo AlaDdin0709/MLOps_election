@@ -5,6 +5,7 @@ Entraîne et évalue les modèles ML classiques et TunBERT
 
 import os
 import sys
+import argparse
 import pandas as pd
 import numpy as np
 import pickle
@@ -28,15 +29,16 @@ from scipy.sparse import issparse
 # MLflow & DagsHub
 import mlflow
 import mlflow.sklearn
+from mlflow.models.signature import infer_signature
 import dagshub
 
 # Configuration
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-PROCESSOR_DIR = BASE_DIR / 'processors'
-MODELS_DIR = BASE_DIR / 'models'
-MODELS_DIR.mkdir(exist_ok=True)
+# Model registry for deployment artifacts
+MODEL_REGISTRY_DIR = BASE_DIR / 'model_registry' / 'Best_Election_Model'
+MODEL_REGISTRY_DIR.mkdir(parents=True, exist_ok=True)
 
 # XGBoost (optionnel)
 try:
@@ -85,46 +87,8 @@ def setup_mlflow():
     print()
 
 # ============================================================================
-# Chargement des données
+# Preprocessing will be done in-memory - no separate loading needed
 # ============================================================================
-
-def load_preprocessed_data():
-    """Charge les données preprocessées"""
-    print("📦 Chargement des données preprocessées")
-    print("-" * 80)
-    
-    data_path = PROCESSOR_DIR / 'preprocessed_data.pkl'
-    if not data_path.exists():
-        raise FileNotFoundError(
-            f"Données preprocessées non trouvées: {data_path}\n"
-            "Exécutez d'abord: python scripts/preprocess.py"
-        )
-    
-    with open(data_path, 'rb') as f:
-        data = pickle.load(f)
-    
-    X_train = data['X_train']
-    X_val = data['X_val']
-    X_test = data['X_test']
-    y_train = data['y_train']
-    y_val = data['y_val']
-    y_test = data['y_test']
-    
-    print(f"✅ Données chargées:")
-    print(f"   Train: {X_train.shape}")
-    print(f"   Val:   {X_val.shape}")
-    print(f"   Test:  {X_test.shape}")
-    print()
-    
-    return X_train, X_val, X_test, y_train, y_val, y_test
-
-def load_vectorizer():
-    """Charge le vectorizer TF-IDF"""
-    vectorizer_path = PROCESSOR_DIR / 'tfidf_vectorizer.pkl'
-    with open(vectorizer_path, 'rb') as f:
-        vectorizer = pickle.load(f)
-    print(f"✅ Vectorizer chargé: {len(vectorizer.get_feature_names_out())} features\n")
-    return vectorizer
 
 # ============================================================================
 # Modèles ML Classiques
@@ -245,28 +209,54 @@ def train_ml_models(X_train, X_test, y_train, y_test):
                 mlflow.log_metric("f1_score", metrics['f1_score'])
                 mlflow.log_metric("training_time_seconds", training_time)
                 
-                # Log modèle
-                mlflow.sklearn.log_model(
-                    model,
-                    artifact_path="model",
-                    registered_model_name=f"Election_{model_name}"
-                )
+                # Log modèle: use model-specific artifact folder and record signature/input_example
+                try:
+                    artifact_name = f"Election_{model_name}"
+                    # Prepare a small input example for signature inference
+                    try:
+                        X_sample = Xtr[:1]
+                        if hasattr(X_sample, 'toarray'):
+                            X_sample_df = pd.DataFrame(X_sample.toarray())
+                        else:
+                            X_sample_df = pd.DataFrame(X_sample)
+                        y_sample_pred = model.predict(X_sample_df)
+                        signature = infer_signature(X_sample_df, y_sample_pred)
+                        input_example = X_sample_df.iloc[[0]]
+                    except Exception:
+                        signature = None
+                        input_example = None
+
+                    mlflow.sklearn.log_model(
+                        model,
+                        artifact_path=artifact_name,
+                        registered_model_name=artifact_name,
+                        signature=signature,
+                        input_example=input_example
+                    )
+                except Exception as e:
+                    print(f"⚠️  Warning: could not log model with signature: {e}")
                 
-                # Log confusion matrix comme artefact
+                # Log confusion matrix as MLflow artifact (in-memory, no file)
                 cm = confusion_matrix(y_test, y_pred)
                 cm_df = pd.DataFrame(
                     cm,
                     index=['Actual_0', 'Actual_1'],
                     columns=['Pred_0', 'Pred_1']
                 )
-                cm_path = MODELS_DIR / f'cm_{model_name}.csv'
-                cm_df.to_csv(cm_path)
-                mlflow.log_artifact(str(cm_path))
+                # Log as text artifact to MLflow (let Python handle cleanup)
+                import tempfile
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as tmp:
+                    tmp_path = tmp.name
+                    cm_df.to_csv(tmp_path)
                 
-                # Sauvegarder localement
-                model_path = MODELS_DIR / f'model_{model_name.lower()}.pkl'
-                with open(model_path, 'wb') as f:
-                    pickle.dump(model, f)
+                try:
+                    mlflow.log_artifact(tmp_path, artifact_path='confusion_matrices')
+                finally:
+                    # Ensure file is closed before deletion
+                    try:
+                        os.unlink(tmp_path)
+                    except (PermissionError, OSError):
+                        pass  # File will be cleaned up by OS eventually
                 
                 trained_models[model_name] = model
                 results.append({
@@ -302,8 +292,8 @@ def save_results_summary(results):
     
     print(df_results.to_string(index=False))
     
-    # Sauvegarder CSV
-    results_path = MODELS_DIR / 'ml_models_results.csv'
+    # Sauvegarder CSV dans model registry
+    results_path = MODEL_REGISTRY_DIR / 'ml_models_results.csv'
     df_results.to_csv(results_path, index=False)
     print(f"\n✅ Résultats sauvegardés: {results_path}")
     
@@ -324,10 +314,37 @@ def main():
     try:
         # Configurer MLflow
         setup_mlflow()
-        
-        # Charger les données
-        X_train, X_val, X_test, y_train, y_val, y_test = load_preprocessed_data()
-        vectorizer = load_vectorizer()
+
+        # CLI: optional custom data path
+        parser = argparse.ArgumentParser()
+        parser.add_argument('--data-path', '-d', help='Optional path to raw data Excel file (overrides default)')
+        args = parser.parse_args()
+
+        # Always run preprocessing in-memory using functions from scripts/preprocess.py
+        # Ensure scripts folder is importable
+        SCRIPTS_DIR = Path(__file__).resolve().parent
+        if str(SCRIPTS_DIR) not in sys.path:
+            sys.path.insert(0, str(SCRIPTS_DIR))
+
+        try:
+            import preprocess
+        except Exception as e:
+            raise RuntimeError(f"Could not import preprocess module: {e}")
+
+        # Determine data path
+        data_path = Path(args.data_path) if args.data_path else (preprocess.DATA_DIR / 'version1.xlsx')
+        if not data_path.exists():
+            raise FileNotFoundError(f"Data file not found: {data_path}")
+
+        # Run preprocessing functions in-memory
+        print("\n" + "="*80)
+        print("🧪 PREPROCESSING - Integrated in Training Pipeline")
+        print("="*80)
+        df = preprocess.load_and_explore_data(data_path)
+        df = preprocess.preprocess_text(df, text_col='comments')
+        X, vectorizer = preprocess.vectorize_text(df, text_col='cleaned', max_features=5000)
+        y = df['target'].values
+        X_train, X_val, X_test, y_train, y_val, y_test = preprocess.split_data(X, y, test_size=0.15, val_size=0.15, random_state=42)
         
         # Entraîner les modèles ML
         results, trained_models = train_ml_models(X_train, X_test, y_train, y_test)
@@ -335,8 +352,8 @@ def main():
         # Sauvegarder résumé
         df_results = save_results_summary(results)
         
-        # Sauvegarder le vectorizer
-        vectorizer_path = MODELS_DIR / 'tfidf_vectorizer.pkl'
+        # Sauvegarder le vectorizer dans model_registry (co-located with production model)
+        vectorizer_path = MODEL_REGISTRY_DIR / 'tfidf_vectorizer.pkl'
         with open(vectorizer_path, 'wb') as f:
             pickle.dump(vectorizer, f)
         print(f"✅ Vectorizer sauvegardé: {vectorizer_path}")
@@ -344,8 +361,9 @@ def main():
         print("\n" + "="*80)
         print("✅ ENTRAÎNEMENT TERMINÉ AVEC SUCCÈS!")
         print("="*80)
-        print(f"📁 Modèles: {MODELS_DIR}")
+        print(f"📁 Model Registry: {MODEL_REGISTRY_DIR}")
         print(f"🔗 MLflow UI: Consultez DagsHub pour voir les runs")
+        print(f"\n📦 Next step: python scripts/register_best_model.py")
         
         return 0
         

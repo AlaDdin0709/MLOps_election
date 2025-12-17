@@ -17,15 +17,6 @@ from datetime import datetime
 # Configuration des chemins
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / 'data'
-PROCESSOR_DIR = BASE_DIR / 'processors'
-PROCESSOR_DIR.mkdir(exist_ok=True)
-
-print("="*80)
-print("🚀 PRÉTRAITEMENT DES DONNÉES - MLOps Election")
-print("="*80)
-print(f"📅 Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-print(f"📁 Répertoire de base: {BASE_DIR}")
-print()
 
 # Stopwords tunisiens
 tunisian_stopwords = [
@@ -186,48 +177,23 @@ def split_data(X, y, test_size=0.15, val_size=0.15, random_state=42):
     
     return X_train, X_val, X_test, y_train, y_val, y_test
 
-def save_preprocessed_data(X_train, X_val, X_test, y_train, y_val, y_test, 
-                          vectorizer, cleaned_texts, labels):
-    """
-    Sauvegarde les données preprocessées et artefacts
-    """
-    print("\n💾 ÉTAPE 5: Sauvegarde des artefacts")
-    print("-" * 80)
-    
-    # Sauvegarder les données preprocessées
-    preprocessed_data = {
-        'X_train': X_train,
-        'X_val': X_val,
-        'X_test': X_test,
-        'y_train': y_train,
-        'y_val': y_val,
-        'y_test': y_test
-    }
-    
-    preprocessed_path = PROCESSOR_DIR / 'preprocessed_data.pkl'
-    with open(preprocessed_path, 'wb') as f:
-        pickle.dump(preprocessed_data, f)
-    print(f"✅ Données preprocessées → {preprocessed_path.name}")
-    
-    # Sauvegarder le vectorizer
-    vectorizer_path = PROCESSOR_DIR / 'tfidf_vectorizer.pkl'
-    with open(vectorizer_path, 'wb') as f:
-        pickle.dump(vectorizer, f)
-    print(f"✅ Vectorizer TF-IDF → {vectorizer_path.name}")
-    
-    # Sauvegarder les textes nettoyés (pour TunBERT)
-    cleaned_path = PROCESSOR_DIR / 'cleaned_texts.pkl'
-    with open(cleaned_path, 'wb') as f:
-        pickle.dump({'cleaned': cleaned_texts, 'labels': labels}, f)
-    print(f"✅ Textes nettoyés → {cleaned_path.name}")
-    
-    print(f"\n📁 Tous les artefacts sauvegardés dans: {PROCESSOR_DIR}")
+# Note: This script is now imported by train.py for in-memory preprocessing
+# No need to save artifacts to disk - train.py handles that
 
 def main():
     """
     Pipeline principal de prétraitement
+    NOTE: This script is now primarily imported by train.py for in-memory preprocessing.
+    Running it standalone will only validate the preprocessing pipeline without saving artifacts.
     """
     try:
+        print("="*80)
+        print("🧪 PREPROCESSING VALIDATION - Standalone Mode")
+        print("="*80)
+        print("⚠️  Note: This validates preprocessing without saving artifacts.")
+        print("   For training, use: python scripts/train.py")
+        print()
+        
         # Charger les données
         data_path = DATA_DIR / 'version1.xlsx'
         if not data_path.exists():
@@ -249,18 +215,14 @@ def main():
             X, y, test_size=0.15, val_size=0.15, random_state=42
         )
         
-        # Sauvegarder tout
-        save_preprocessed_data(
-            X_train, X_val, X_test, 
-            y_train, y_val, y_test,
-            vectorizer,
-            df['cleaned'].tolist(),
-            df['target'].tolist()
-        )
-        
         print("\n" + "="*80)
-        print("✅ PRÉTRAITEMENT TERMINÉ AVEC SUCCÈS!")
+        print("✅ PREPROCESSING VALIDATION SUCCESSFUL!")
         print("="*80)
+        print(f"📊 Data shapes validated:")
+        print(f"   Train: {X_train.shape}")
+        print(f"   Val:   {X_val.shape}")
+        print(f"   Test:  {X_test.shape}")
+        print(f"\n💡 To train models, run: python scripts/train.py")
         
         return 0
         
