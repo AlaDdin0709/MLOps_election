@@ -37,11 +37,15 @@ jobs:
 
       - name: Pull data from DVC
         run: |
-          dvc pull
+          dvc pull -v
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      - name: Check data presence (Debug)
+        run: |
+          ls -R data/
+          
       - name: Install backend requirements
         run: |
           python -m pip install --upgrade pip

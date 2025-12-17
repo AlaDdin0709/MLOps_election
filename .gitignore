@@ -37,7 +37,6 @@ ENV/
 
 # MLOps
 .env
-*.dvc
 .dvc/cache
 .dvc/tmp
 .dvc/config.local
