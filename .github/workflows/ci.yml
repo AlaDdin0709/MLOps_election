@@ -25,9 +25,9 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install DVC
+      - name: Install training requirements
         run: |
-          pip install dvc dvc-s3
+          pip install -r requirements.txt
 
       - name: Pull data from DVC
         run: |
