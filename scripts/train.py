@@ -105,7 +105,6 @@ def setup_mlflow():
 def get_ml_models():
     """Retourne la configuration des modèles ML"""
     models = {
-        'Naive_Bayes': GaussianNB(),
         'Neural_Network': MLPClassifier(
             hidden_layer_sizes=(10, 10),
             activation='logistic',
@@ -126,14 +125,7 @@ def get_ml_models():
             class_weight='balanced',
             random_state=42
         ),
-        'Gradient_Boosting': GradientBoostingClassifier(
-            n_estimators=200,
-            learning_rate=0.1,
-            random_state=42
-        ),
         'SVM_Linear': SVC(kernel='linear', random_state=42),
-        'SVM_RBF': SVC(kernel='rbf', random_state=42),
-        'SVM_Sigmoid': SVC(kernel='sigmoid', random_state=42),
         'SVM_Poly': SVC(kernel='poly', degree=2, random_state=42)
     }
     
