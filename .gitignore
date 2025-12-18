@@ -56,7 +56,7 @@ logs/
 *.log
 *.html
 *.json
-reports/
+# reports/
 
 # Notebooks
 .ipynb_checkpoints/
@@ -64,3 +64,7 @@ reports/
 
 # OS
 Thumbs.db
+
+# Security
+*.pem
+*.key

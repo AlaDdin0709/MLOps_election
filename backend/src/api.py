@@ -2,10 +2,10 @@ import os
 import io
 import json
 import pickle
-from typing import List, Union
+
 
 import pandas as pd
-import numpy as np
+
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel

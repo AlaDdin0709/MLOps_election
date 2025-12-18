@@ -15,12 +15,12 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 # ML classiques
-from sklearn.naive_bayes import GaussianNB
+
 import xgboost as xgb
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     classification_report, confusion_matrix
@@ -158,7 +158,7 @@ def get_ml_models():
         )
     }
     
-    if not HAS_XGB:
+    if HAS_XGB:
         models['XGBoost'] = XGBClassifier(
             n_estimators=300,
             learning_rate=0.1,
