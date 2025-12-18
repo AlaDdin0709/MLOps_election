@@ -53,6 +53,7 @@ class TestHealthEndpoint:
         assert 'model_loaded' in data
 
 
+
 class TestPredictEndpoint:
     """Test /predict endpoint."""
     
