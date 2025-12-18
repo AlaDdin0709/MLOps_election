@@ -8,6 +8,7 @@ on:
 
 env:
   PYTHONUNBUFFERED: 1
+  MLFLOW_EXPERIMENT: sentiment_classification_tunisian_v2
 
 jobs:
   ci:

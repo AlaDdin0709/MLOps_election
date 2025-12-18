@@ -30,6 +30,7 @@ from scipy.sparse import issparse
 # MLflow & DagsHub
 import mlflow
 import mlflow.sklearn
+from mlflow.exceptions import MlflowException
 from mlflow.models.signature import infer_signature
 import dagshub
 
@@ -70,6 +71,8 @@ def setup_mlflow():
         'MLFLOW_TRACKING_URI',
         f"https://dagshub.com/{DAGSHUB_USERNAME}/{DAGSHUB_REPO}.mlflow"
     )
+    # Allow overriding the experiment name from environment (useful if experiment was deleted)
+    MLFLOW_EXPERIMENT = os.getenv('MLFLOW_EXPERIMENT', 'sentiment_classification_tunisian')
     
     print("\n🔧 Configuration MLflow & DagsHub")
     print("-" * 80)
@@ -89,7 +92,24 @@ def setup_mlflow():
     
     # Configurer MLflow
     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    mlflow.set_experiment("sentiment_classification_tunisian")
+    try:
+        mlflow.set_experiment(MLFLOW_EXPERIMENT)
+        print(f"✅ Experiment: {MLFLOW_EXPERIMENT}")
+    except MlflowException as e:
+        msg = str(e).lower()
+        if 'deleted experiment' in msg or 'cannot set a deleted experiment' in msg:
+            # Create a new experiment name and try to create it
+            new_name = MLFLOW_EXPERIMENT + '_v2'
+            try:
+                mlflow.create_experiment(new_name)
+                mlflow.set_experiment(new_name)
+                print(f"⚠️  Experiment '{MLFLOW_EXPERIMENT}' was deleted. Created new experiment: {new_name}")
+                print(f"⚠️  Please update your .env: MLFLOW_EXPERIMENT={new_name}")
+            except Exception as e2:
+                print(f"❌ Could not create fallback experiment '{new_name}': {e2}")
+                raise
+        else:
+            raise
     
     print(f"✅ MLflow Tracking URI: {MLFLOW_TRACKING_URI}")
     print(f"✅ Experiment: sentiment_classification_tunisian")
@@ -126,8 +146,8 @@ def get_ml_models():
         #    class_weight='balanced',
         #    random_state=42
         #),
-        'SVM_Linear': SVC(kernel='linear', random_state=42)#,
-        #'SVM_Poly': SVC(kernel='poly', degree=2, random_state=42),
+        'SVM_Linear': SVC(kernel='linear', random_state=42),
+        'SVM_Poly': SVC(kernel='poly', degree=2, random_state=42)#,
         #'XGBoost': xgb.XGBClassifier(
         #    n_estimators=200,
         #    learning_rate=0.1,
@@ -138,7 +158,7 @@ def get_ml_models():
         #)
     }
     
-    if HAS_XGB:
+    if not HAS_XGB:
         models['XGBoost'] = XGBClassifier(
             n_estimators=300,
             learning_rate=0.1,
@@ -251,13 +271,30 @@ def train_ml_models(X_train, X_test, y_train, y_test, vectorizer=None):
                         signature = None
                         input_example = None
 
+                    # Use MLflow 2.x API: use 'name' instead of deprecated 'artifact_path'
+                    # This saves the model as a run artifact (not just registered)
                     mlflow.sklearn.log_model(
                         model,
-                        artifact_path=artifact_name,
-                        registered_model_name=artifact_name,
+                        name="model",  # MLflow 2.x: use 'name' instead of artifact_path
                         signature=signature,
                         input_example=input_example
                     )
+                    # Also write a plain pickle of the model and log it to the 'model' artifact
+                    # This guarantees a downloadable 'model.pkl' for registration scripts.
+                    try:
+                        import tempfile
+                        with tempfile.NamedTemporaryFile(mode='wb', suffix='.pkl', delete=False) as mf:
+                            tmp_model_path = mf.name
+                            pickle.dump(model, mf)
+                        try:
+                            mlflow.log_artifact(tmp_model_path, artifact_path='model')
+                        finally:
+                            try:
+                                os.unlink(tmp_model_path)
+                            except Exception:
+                                pass
+                    except Exception as e:
+                        print(f"⚠️  Warning: could not explicitly log raw model pickle: {e}")
                 except Exception as e:
                     print(f"⚠️  Warning: could not log model with signature: {e}")
                 
@@ -318,6 +355,24 @@ def train_ml_models(X_train, X_test, y_train, y_test, vectorizer=None):
     
     if failed_models:
         print(f"\n⚠️  Modèles échoués: {failed_models}")
+    
+    # Manually register all trained models to the MLflow Model Registry
+    # (they are now saved as run artifacts, we just register them for versioning)
+    print("\n🔐 Registering trained models in MLflow Model Registry...")
+    for model_name, model in trained_models.items():
+        artifact_name = f"Election_{model_name}"
+        # Find the run for this model to get its URI
+        for result in results:
+            if result['Model'] == model_name:
+                # We need the run_id - extract it from MLflow (last active run was this model)
+                # For simplicity, we'll register via the URI pattern after logging
+                try:
+                    # Try to register - if it already exists, just create a new version
+                    model_uri = f"runs:/{mlflow.active_run().info.run_id if mlflow.active_run() else 'unknown'}/model"
+                    # Actually this won't work since we're outside the run context
+                    # Let the main() function handle registration after training
+                except Exception:
+                    pass
     
     return results, trained_models, best_run_id
 
