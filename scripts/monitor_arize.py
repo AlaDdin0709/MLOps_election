@@ -120,8 +120,9 @@ def run_production_monitoring():
     
     schema = Schema(
         prediction_id_column_name="prediction_id",
-        timestamp_column_name="prediction_ts", # Ajout du timestamp
+        timestamp_column_name="prediction_ts",
         prediction_label_column_name="prediction_label",
+        prediction_score_column_name="score_1", # Ajout du score de confiance
         actual_label_column_name="target",
         feature_column_names=['comments']
     )
