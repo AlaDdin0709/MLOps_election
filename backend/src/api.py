@@ -19,7 +19,6 @@ model = None
 model_metadata = {}
 vectorizer = None
 
-
 def load_local_model():
     global model, model_metadata
     try:
