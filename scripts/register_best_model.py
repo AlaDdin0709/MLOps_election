@@ -105,9 +105,10 @@ def main():
         return 1
 
     # Attempt to download vectorizer
-    print("🔎 Searching for vectorizer artifact...")
+    print("🔎 Searching for vectorizer artifact in 'vectorizer/tfidf_vectorizer.pkl'...")
     try:
-        vec_local = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="tfidf_vectorizer.pkl")
+        # Match the path we used in train.py: artifact_path="vectorizer"
+        vec_local = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="vectorizer/tfidf_vectorizer.pkl")
         vec_dest = DEST_DIR / 'tfidf_vectorizer.pkl'
         shutil.copy2(vec_local, vec_dest)
         print(f"✅ Vectorizer downloaded and copied to {vec_dest}")

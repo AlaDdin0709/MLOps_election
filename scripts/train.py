@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 # ML classiques
 from sklearn.naive_bayes import GaussianNB
+import xgboost as xgb
 from sklearn.neural_network import MLPClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
@@ -126,7 +127,15 @@ def get_ml_models():
             random_state=42
         ),
         'SVM_Linear': SVC(kernel='linear', random_state=42),
-        'SVM_Poly': SVC(kernel='poly', degree=2, random_state=42)
+        'SVM_Poly': SVC(kernel='poly', degree=2, random_state=42),
+        'XGBoost': xgb.XGBClassifier(
+            n_estimators=200,
+            learning_rate=0.1,
+            max_depth=6,
+            random_state=42,
+            use_label_encoder=False,
+            eval_metric='logloss'
+        )
     }
     
     if HAS_XGB:
@@ -363,9 +372,10 @@ def main():
         print(f"✅ Vectorizer sauvegardé: {vectorizer_path}")
         
         # Log vectorizer as artifact in the last active MLflow run
+        # We use a context to ensure it logs to the correct directory structure
         if mlflow.active_run():
-            mlflow.log_artifact(str(vectorizer_path))
-            print(f"✅ Vectorizer loggé comme artifact MLflow")
+            mlflow.log_artifact(local_path=str(vectorizer_path), artifact_path="vectorizer")
+            print(f"✅ Vectorizer loggé comme artifact MLflow dans 'vectorizer/'")
         
         print("\n" + "="*80)
         print("✅ ENTRAÎNEMENT TERMINÉ AVEC SUCCÈS!")

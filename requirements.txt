@@ -12,6 +12,7 @@ dagshub==0.6.4
 dvc==3.59.1
 dvc-s3==3.2.0
 tqdm==4.67.1
+xgboost==2.1.2
 
 # Data Processing
 openpyxl==3.1.5
