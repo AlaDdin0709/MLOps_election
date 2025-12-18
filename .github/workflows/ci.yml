@@ -136,3 +136,4 @@ jobs:
             
             # Clean up
             docker image prune -f
+            #v1.0.0
