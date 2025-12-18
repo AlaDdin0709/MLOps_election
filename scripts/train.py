@@ -126,36 +126,36 @@ def setup_mlflow():
 def get_ml_models():
     """Retourne la configuration des modèles ML"""
     models = {
-        #'Neural_Network': MLPClassifier(
-        #    hidden_layer_sizes=(10, 10),
-        #    activation='logistic',
-        #    solver='adam',
-        #    max_iter=500,
-        #    random_state=42
-        #),
-        #'Logistic_Regression': LogisticRegression(
-        #    solver='liblinear',
-        #    class_weight='balanced',
-        #    max_iter=1000,
-        #    random_state=42
-        #),
-        #'Random_Forest': RandomForestClassifier(
-        #    n_estimators=200,
-        #    max_depth=None,
-        #    n_jobs=-1,
-        #    class_weight='balanced',
-        #    random_state=42
-        #),
+        'Neural_Network': MLPClassifier(
+            hidden_layer_sizes=(10, 10),
+            activation='logistic',
+            solver='adam',
+            max_iter=500,
+            random_state=42
+        ),
+        'Logistic_Regression': LogisticRegression(
+            solver='liblinear',
+            class_weight='balanced',
+            max_iter=1000,
+            random_state=42
+        ),
+        'Random_Forest': RandomForestClassifier(
+            n_estimators=200,
+            max_depth=None,
+            n_jobs=-1,
+            class_weight='balanced',
+            random_state=42
+        ),
         'SVM_Linear': SVC(kernel='linear', random_state=42),
-        'SVM_Poly': SVC(kernel='poly', degree=2, random_state=42)#,
-        #'XGBoost': xgb.XGBClassifier(
-        #    n_estimators=200,
-        #    learning_rate=0.1,
-        #    max_depth=6,
-        #    random_state=42,
-        #    use_label_encoder=False,
-        #    eval_metric='logloss'
-        #)
+        'SVM_Poly': SVC(kernel='poly', degree=2, random_state=42),
+        'XGBoost': xgb.XGBClassifier(
+            n_estimators=200,
+            learning_rate=0.1,
+            max_depth=6,
+            random_state=42,
+            use_label_encoder=False,
+            eval_metric='logloss'
+        )
     }
     
     if not HAS_XGB:
