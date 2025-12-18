@@ -56,7 +56,26 @@ jobs:
         run: |
           pip install -r frontend/requirements.txt
 
-      - name: Run training (also saves model + vectorizer locally)
+      - name: Arize AI Monitoring & Drift Check
+        id: monitoring
+        run: |
+          # 1. Envoyer les données à Arize
+          python scripts/monitor_arize.py
+          
+          # 2. Vérifier la dérive (Drift)
+          # Le script sort en erreur (exit 1) SI dérive détectée
+          python scripts/check_drift_and_retrain.py
+        continue-on-error: true
+        env:
+          ARIZE_SPACE_KEY: ${{ secrets.ARIZE_SPACE_KEY }}
+          ARIZE_API_KEY: ${{ secrets.ARIZE_API_KEY }}
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+
+      - name: Run training (Conditional CT)
+        # On entraîne SEULEMENT si :
+        # - L'étape de monitoring a échoué (exit 1 -> Drift détecté)
+        # - OU si c'est un push forcé sur master (optionnel)
+        if: steps.monitoring.outcome == 'failure' || github.event_name == 'workflow_dispatch'
         run: |
           python scripts/train.py
         env:

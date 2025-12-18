@@ -30,24 +30,25 @@ def fetch_arize_metrics():
         "content-type": "application/json",
     }
 
-    # Requête finale corrigée (models est une Connection, on utilise edges > node)
+    # Requête pour obtenir les infos de base et l'ID de la baseline
     query = """
     query getModelStats($spaceId: ID!) {
       node(id: $spaceId) {
         ... on Space {
           name
-          models {
+          models(first: 50) {
             edges {
               node {
+                id
                 name
-                averagePerformanceMetric(metric: ACCURACY) {
-                  value
+                modelPrimaryBaseline {
+                  id
                 }
                 driftStatus {
-                  state
+                  status
                 }
                 dataQualityStatus {
-                  state
+                  status
                 }
               }
             }
@@ -72,27 +73,32 @@ def fetch_arize_metrics():
             data = response.json()
             if 'errors' in data:
                 print(f"❌ Erreur GraphQL : {data['errors'][0]['message']}")
+                # Si erreur de schéma, on peut suggérer de vérifier le dashboard
             else:
                 space_data = data.get('data', {}).get('node', {})
                 if space_data:
                     print(f"\n🏢 Espace : {space_data.get('name')}")
-                    # On extrait les nodes depuis les edges
                     edges = space_data.get('models', {}).get('edges', [])
                     models = [e['node'] for e in edges if e.get('node')]
                     
-                    # On cherche notre modèle spécifique
                     target_model_name = "election_sentiment_tunisia"
                     model = next((m for m in models if m['name'] == target_model_name), None)
                     
                     if model:
-                        acc = model.get('averagePerformanceMetric')
-                        drift = model.get('driftStatus', {}).get('state')
-                        quality = model.get('dataQualityStatus', {}).get('state')
+                        drift = model.get('driftStatus', {}).get('status')
+                        quality = model.get('dataQualityStatus', {}).get('status')
+                        baseline_id = model.get('modelPrimaryBaseline', {}).get('id') if model.get('modelPrimaryBaseline') else 'Aucune'
                         
                         print(f"\n🎯 Modèle : {model['name']}")
-                        print(f"   📊 Accuracy (Dernière) : {acc['value'] if acc else 'N/A'}")
+                        print(f"   🆔 ID Baseline : {baseline_id}")
                         print(f"   📉 Statut Drift : {drift if drift else 'Calcul en cours...'}")
                         print(f"   🧹 Qualité Données : {quality if quality else 'N/A'}")
+                        
+                        if drift == "DEVIATING":
+                            print("\n🚨 ALERTE : Dérive détectée ! Un réentraînement est conseillé.")
+                        else:
+                            print("\n✅ État stable. Pas de dérive critique détectée.")
+                            
                     else:
                         model_names = [m['name'] for m in models]
                         print(f"❓ Modèle '{target_model_name}' non trouvé.")

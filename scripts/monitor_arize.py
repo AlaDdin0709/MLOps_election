@@ -118,27 +118,33 @@ def run_production_monitoring():
         production_data['score_0'] = None
         production_data['score_1'] = None
     
+    # Enriquissement pour NLP : Ajout d'Embedding (optionnel mais recommandé pour Arize)
+    # Arize peut autogénérer des embeddings si on lui donne le texte, 
+    # mais pour activer "Embedding Drift", on définit le schema NLP.
+    
     schema = Schema(
         prediction_id_column_name="prediction_id",
         timestamp_column_name="prediction_ts",
         prediction_label_column_name="prediction_label",
-        prediction_score_column_name="score_1", # Ajout du score de confiance
+        prediction_score_column_name="score_1",
         actual_label_column_name="target",
-        feature_column_names=['comments']
+        feature_column_names=['comments'],
     )
 
 
     print(f"📡 Envoi de la BASELINE (Entraînement) : {len(training_data)} lignes...")
+    # Pour la baseline, on envoie tout (features, predictions, actuals)
     res_train = client.log(
         dataframe=training_data,
         model_id='election_sentiment_tunisia',
         model_version='1.0',
-        environment=Environments.TRAINING, # <--- Très important pour le Drift !
+        environment=Environments.TRAINING,
         model_type=ModelTypes.SCORE_CATEGORICAL,
         schema=schema
     )
 
     print(f"📡 Envoi des données de PRODUCTION : {len(production_data)} lignes...")
+    # Pour la production, on envoie les predictions et les features
     res_prod = client.log(
         dataframe=production_data,
         model_id='election_sentiment_tunisia',

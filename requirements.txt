@@ -26,6 +26,6 @@ pytest-cov>=4.0.0
 
 # Monitoring
 arize
-evidently
+#evidently
 # Pin plotly to avoid pip resolver backtracking (compatible with evidently)
-plotly==5.24.0
+#plotly==5.24.0
