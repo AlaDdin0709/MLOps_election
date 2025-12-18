@@ -44,7 +44,7 @@ def main():
         df = mlflow.search_runs(
             experiment_ids=[exp.experiment_id],
             filter_string="metrics.f1_score > 0",
-            order_by=["metrics.f1_score DESC"],
+            order_by=["start_time DESC"],  # Pick the LATEST run, not just best F1, to ensure we get the vectorizer
             max_results=1
         )
     except Exception as e:
@@ -106,15 +106,27 @@ def main():
 
     # Attempt to download vectorizer
     print("🔎 Searching for vectorizer artifact in 'vectorizer/tfidf_vectorizer.pkl'...")
+    # First try the exact expected path
+    vec_dest = DEST_DIR / 'tfidf_vectorizer.pkl'
     try:
-        # Match the path we used in train.py: artifact_path="vectorizer"
         vec_local = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="vectorizer/tfidf_vectorizer.pkl")
-        vec_dest = DEST_DIR / 'tfidf_vectorizer.pkl'
         shutil.copy2(vec_local, vec_dest)
         print(f"✅ Vectorizer downloaded and copied to {vec_dest}")
-    except Exception as e:
-        print(f"⚠️  Could not find or download vectorizer: {e}")
-        print("   If this is the first run after code changes, ensure train.py has run successfully.")
+    except Exception:
+        # Fallback: download the whole 'vectorizer' artifact directory and search for any .pkl
+        try:
+            print("⚠️  Exact path not found, attempting to download 'vectorizer' directory and search for .pkl files...")
+            vec_dir_local = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="vectorizer")
+            vec_dir_local = Path(vec_dir_local)
+            pkl_files = list(vec_dir_local.rglob('*.pkl'))
+            if pkl_files:
+                shutil.copy2(pkl_files[0], vec_dest)
+                print(f"✅ Vectorizer (fallback) downloaded and copied to {vec_dest} from {pkl_files[0]}")
+            else:
+                raise FileNotFoundError(f"No .pkl files found under downloaded vectorizer dir: {vec_dir_local}")
+        except Exception as e:
+            print(f"⚠️  Could not find or download vectorizer: {e}")
+            print("   If this is the first run after code changes, ensure train.py has run successfully and logged the vectorizer artifact named 'tfidf_vectorizer.pkl'.")
 
     # Optional: register model in MLflow Model Registry
     reg_model_name = os.getenv('REGISTER_MODEL_NAME', f"Election_{model_name_param}")

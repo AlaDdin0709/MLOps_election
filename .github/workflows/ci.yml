@@ -55,7 +55,11 @@ jobs:
         run: |
           pip install -r frontend/requirements.txt
 
-      - name: Run training
+      - name: Run pytest (unit tests)
+        run: |
+          pytest tests/ -v --tb=short
+
+      - name: Run training (also saves model + vectorizer locally)
         run: |
           python scripts/train.py
         env:
@@ -63,13 +67,9 @@ jobs:
           DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
           DAGSHUB_REPO_NAME: ${{ secrets.DAGSHUB_REPO_NAME }}
 
-      - name: Register best model
-        run: |
-          python scripts/register_best_model.py
-        env:
-          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
-          DAGSHUB_REPO_NAME: ${{ secrets.DAGSHUB_REPO_NAME }}
+      # No need to run register_best_model.py here - train.py already saves
+      # model and vectorizer locally for smoke tests. register_best_model.py
+      # is run in the deploy job to download production artifacts from MLflow.
 
       - name: Install uvicorn (for smoke tests)
         run: |

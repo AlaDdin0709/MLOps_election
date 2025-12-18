@@ -163,7 +163,21 @@ def calculate_metrics(y_true, y_pred):
         'f1_score': f1_score(y_true, y_pred, average='binary', zero_division=0)
     }
 
-def train_ml_models(X_train, X_test, y_train, y_test):
+
+def evaluate_model(model, X_test, y_test):
+    """Wrapper to evaluate a trained model on test data and return metrics dict.
+
+    Handles sparse matrices by converting to dense when needed.
+    """
+    try:
+        Xte = X_test.toarray() if issparse(X_test) else X_test
+    except Exception:
+        Xte = X_test
+
+    y_pred = model.predict(Xte)
+    return calculate_metrics(y_test, y_pred)
+
+def train_ml_models(X_train, X_test, y_train, y_test, vectorizer=None):
     """Entraîne tous les modèles ML avec MLflow tracking"""
     print("🤖 ENTRAÎNEMENT DES MODÈLES ML CLASSIQUES")
     print("="*80)
@@ -172,6 +186,8 @@ def train_ml_models(X_train, X_test, y_train, y_test):
     results = []
     trained_models = {}
     failed_models = []
+    best_run_id = None
+    best_f1 = -1
     
     for model_name, model in models.items():
         print(f"\n🔄 Entraînement: {model_name}")
@@ -267,12 +283,30 @@ def train_ml_models(X_train, X_test, y_train, y_test):
                     except (PermissionError, OSError):
                         pass  # File will be cleaned up by OS eventually
                 
+                # Log vectorizer as artifact in THIS run so register_best_model can find it
+                if vectorizer is not None:
+                    import tempfile
+                    # Create a temp dir and write the vectorizer with a stable filename
+                    with tempfile.TemporaryDirectory() as td:
+                        vec_tmp = os.path.join(td, 'tfidf_vectorizer.pkl')
+                        with open(vec_tmp, 'wb') as vf:
+                            pickle.dump(vectorizer, vf)
+                        try:
+                            mlflow.log_artifact(vec_tmp, artifact_path='vectorizer')
+                        except Exception as _e:
+                            print(f"⚠️  Warning: failed to log vectorizer artifact: {_e}")
+                
                 trained_models[model_name] = model
                 results.append({
                     'Model': model_name,
                     **metrics,
                     'Training_Time': training_time
                 })
+                
+                # Track best run for later
+                if metrics['f1_score'] > best_f1:
+                    best_f1 = metrics['f1_score']
+                    best_run_id = mlflow.active_run().info.run_id
                 
                 print(f"   ✅ Terminé - F1: {metrics['f1_score']:.4f} ({training_time:.2f}s)")
                 
@@ -285,7 +319,7 @@ def train_ml_models(X_train, X_test, y_train, y_test):
     if failed_models:
         print(f"\n⚠️  Modèles échoués: {failed_models}")
     
-    return results, trained_models
+    return results, trained_models, best_run_id
 
 # ============================================================================
 # Résumé et export
@@ -355,27 +389,21 @@ def main():
         y = df['target'].values
         X_train, X_val, X_test, y_train, y_val, y_test = preprocess.split_data(X, y, test_size=0.15, val_size=0.15, random_state=42)
         
-        # Entraîner les modèles ML
-        results, trained_models = train_ml_models(X_train, X_test, y_train, y_test)
+        # Entraîner les modèles ML (pass vectorizer to log as artifact in each run)
+        results, trained_models, best_run_id = train_ml_models(X_train, X_test, y_train, y_test, vectorizer=vectorizer)
         
         # Sauvegarder résumé
         df_results = save_results_summary(results)
         
         # Sauvegarder le vectorizer dans model_registry (co-located with production model)
-        # Ensure subfolder exists
-        best_model_dir = MODEL_REGISTRY_DIR / 'Best_Election_Model'
-        best_model_dir.mkdir(parents=True, exist_ok=True)
-        
-        vectorizer_path = best_model_dir / 'tfidf_vectorizer.pkl'
+        # Save directly in MODEL_REGISTRY_DIR (not nested subfolder)
+        vectorizer_path = MODEL_REGISTRY_DIR / 'tfidf_vectorizer.pkl'
         with open(vectorizer_path, 'wb') as f:
             pickle.dump(vectorizer, f)
         print(f"✅ Vectorizer sauvegardé: {vectorizer_path}")
         
-        # Log vectorizer as artifact in the last active MLflow run
-        # We use a context to ensure it logs to the correct directory structure
-        if mlflow.active_run():
-            mlflow.log_artifact(local_path=str(vectorizer_path), artifact_path="vectorizer")
-            print(f"✅ Vectorizer loggé comme artifact MLflow dans 'vectorizer/'")
+        if best_run_id:
+            print(f"✅ Best run ID for registration: {best_run_id}")
         
         print("\n" + "="*80)
         print("✅ ENTRAÎNEMENT TERMINÉ AVEC SUCCÈS!")

@@ -8,3 +8,4 @@ joblib==1.5.1
 numpy==1.26.4
 python-multipart==0.0.20
 xgboost==2.1.2
+httpx>=0.24.0  # Required for FastAPI TestClient
