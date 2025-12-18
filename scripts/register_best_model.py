@@ -64,9 +64,21 @@ def main():
     # Prepare destination
     DEST_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Attempt to download the artifact. Try common locations.
+    # Attempt to download the artifact. Try common locations + our custom paths.
     downloaded = None
-    candidates = ["model/model.pkl", "model.pkl", "model"]
+    # Artifact path in train.py is f"Election_{model_name}"
+    custom_model_path = f"Election_{model_name_param}/model.pkl"
+    custom_model_dir = f"Election_{model_name_param}"
+    
+    candidates = [
+        custom_model_path,       # e.g., Election_XGBoost/model.pkl
+        custom_model_dir,        # e.g., Election_XGBoost/
+        "model/model.pkl", 
+        "model.pkl", 
+        "model"
+    ]
+    
+    print(f"🔎 Looking for artifacts in candidates: {candidates}")
     for art in candidates:
         try:
             local = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path=art)
