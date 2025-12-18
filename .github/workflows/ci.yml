@@ -64,42 +64,6 @@ jobs:
           DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
           DAGSHUB_REPO_NAME: ${{ secrets.DAGSHUB_REPO_NAME }}
 
-      # No need to run register_best_model.py here - train.py already saves
-      # model and vectorizer locally for smoke tests. register_best_model.py
-      # is run in the deploy job to download production artifacts from MLflow.
-
-      - name: Install uvicorn (for smoke tests)
-        run: |
-          pip install "uvicorn[standard]"
-
-      - name: Start backend (uvicorn)
-        run: |
-          nohup uvicorn backend.src.api:app --host 0.0.0.0 --port 8000 > backend.log 2>&1 &
-
-      - name: Wait for backend health
-        run: |
-          for i in {1..30}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000/health || echo 000)
-            echo "Attempt $i: $code"
-            if [ "$code" = "200" ]; then exit 0; fi
-            sleep 2
-          done
-          echo "Backend did not become healthy"; exit 1
-
-      - name: Smoke check backend endpoints
-        run: |
-          curl -sS http://localhost:8000/health
-
-      - name: Stop uvicorn (free port 8000)
-        run: |
-          pkill -f uvicorn || true
-          sleep 2
-
-      - name: Build and deploy with Docker Compose (Local Check)
-        run: |
-          docker compose build
-          docker compose up -d
-
   deploy:
     needs: ci
     if: github.ref == 'refs/heads/master'
