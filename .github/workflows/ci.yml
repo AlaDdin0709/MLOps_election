@@ -98,8 +98,36 @@ jobs:
           pkill -f uvicorn || true
           sleep 2
 
-      - name: Build and deploy with Docker Compose (self-hosted)
+      - name: Build and deploy with Docker Compose (Local Check)
         run: |
           docker compose build
           docker compose up -d
+
+  deploy:
+    needs: ci
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Déploiement du Backend
+      - name: Deploy Backend to Heroku
+        uses: akhileshns/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME_BACK }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          usedocker: true
+          appdir: "backend"
+
+      # Déploiement du Frontend
+      - name: Deploy Frontend to Heroku
+        uses: akhileshns/heroku-deploy@v3.13.15
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME_FRONT }}
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          usedocker: true
+          appdir: "frontend"
 
