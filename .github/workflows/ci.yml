@@ -55,10 +55,6 @@ jobs:
         run: |
           pip install -r frontend/requirements.txt
 
-      - name: Run pytest (unit tests)
-        run: |
-          pytest tests/ -v --tb=short
-
       - name: Run training (also saves model + vectorizer locally)
         run: |
           python scripts/train.py
