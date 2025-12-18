@@ -353,10 +353,19 @@ def main():
         df_results = save_results_summary(results)
         
         # Sauvegarder le vectorizer dans model_registry (co-located with production model)
-        vectorizer_path = MODEL_REGISTRY_DIR / 'tfidf_vectorizer.pkl'
+        # Ensure subfolder exists
+        best_model_dir = MODEL_REGISTRY_DIR / 'Best_Election_Model'
+        best_model_dir.mkdir(parents=True, exist_ok=True)
+        
+        vectorizer_path = best_model_dir / 'tfidf_vectorizer.pkl'
         with open(vectorizer_path, 'wb') as f:
             pickle.dump(vectorizer, f)
         print(f"✅ Vectorizer sauvegardé: {vectorizer_path}")
+        
+        # Log vectorizer as artifact in the last active MLflow run
+        if mlflow.active_run():
+            mlflow.log_artifact(str(vectorizer_path))
+            print(f"✅ Vectorizer loggé comme artifact MLflow")
         
         print("\n" + "="*80)
         print("✅ ENTRAÎNEMENT TERMINÉ AVEC SUCCÈS!")

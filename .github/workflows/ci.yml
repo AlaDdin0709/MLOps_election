@@ -108,6 +108,35 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install requirements for registration
+        run: |
+          pip install -r requirements.txt
+
+      - name: Download production artifacts (Model + Vectorizer)
+        run: |
+          python scripts/register_best_model.py
+        env:
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          DAGSHUB_REPO_NAME: ${{ secrets.DAGSHUB_REPO_NAME }}
+
+      - name: Copy artifacts to Azure VM
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "model_registry/"
+          target: "~/mlops_election/"
+
       - name: Deploy to Azure VM via SSH
         uses: appleboy/ssh-action@master
         with:
@@ -122,12 +151,12 @@ jobs:
             
             cd ~/mlops_election
             
-            # Récupérer le dernier code
+            # Récupérer le dernier code (SANS écraser model_registry chargé par SCP)
             git pull origin master
             
             # Redémarrer avec docker-compose
             docker-compose down
             docker-compose up -d --build
             
-            # Nettoyage des images inutilisées
+            # Nettoyage
             docker image prune -f

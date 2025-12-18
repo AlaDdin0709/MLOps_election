@@ -104,6 +104,17 @@ def main():
         print(f"❌ Error copying model artifact: {e}")
         return 1
 
+    # Attempt to download vectorizer
+    print("🔎 Searching for vectorizer artifact...")
+    try:
+        vec_local = mlflow.artifacts.download_artifacts(run_id=run_id, artifact_path="tfidf_vectorizer.pkl")
+        vec_dest = DEST_DIR / 'tfidf_vectorizer.pkl'
+        shutil.copy2(vec_local, vec_dest)
+        print(f"✅ Vectorizer downloaded and copied to {vec_dest}")
+    except Exception as e:
+        print(f"⚠️  Could not find or download vectorizer: {e}")
+        print("   If this is the first run after code changes, ensure train.py has run successfully.")
+
     # Optional: register model in MLflow Model Registry
     reg_model_name = os.getenv('REGISTER_MODEL_NAME', f"Election_{model_name_param}")
     model_uri = f"runs:/{run_id}/model"
