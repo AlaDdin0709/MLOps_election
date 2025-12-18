@@ -155,9 +155,20 @@ jobs:
           script: |
             cd ~/mlops_election
             
+            # Ensure we are in a valid git repo (Fix for broken VM state)
+            if [ ! -d ".git" ]; then
+              echo "⚠️ .git not found. Initializing..."
+              git init
+              git remote add origin https://github.com/AlaDdin0709/mlops_election.git
+            fi
+
+            # Force sync with 'master'
+            git fetch origin master
+            git reset --hard origin/master
+            
             # Restart with docker-compose
             docker-compose down || true
             docker-compose up -d --build
             
-            # Nettoyage
+            # Clean up
             docker image prune -f
