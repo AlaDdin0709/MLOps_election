@@ -108,26 +108,26 @@ jobs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # Déploiement du Backend
-      - name: Deploy Backend to Heroku
-        uses: akhileshns/heroku-deploy@v3.13.15
+      - name: Deploy to Azure VM via SSH
+        uses: appleboy/ssh-action@master
         with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME_BACK }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          usedocker: true
-          appdir: "backend"
-
-      # Déploiement du Frontend
-      - name: Deploy Frontend to Heroku
-        uses: akhileshns/heroku-deploy@v3.13.15
-        with:
-          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME_FRONT }}
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
-          usedocker: true
-          appdir: "frontend"
-
+          host: ${{ secrets.VM_IP }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # Créer le répertoire du projet s'il n'existe pas
+            if [ ! -d "~/mlops_election" ]; then
+              git clone https://github.com/AlaDdin0709/mlops_election.git ~/mlops_election
+            fi
+            
+            cd ~/mlops_election
+            
+            # Récupérer le dernier code
+            git pull origin master
+            
+            # Redémarrer avec docker-compose
+            docker-compose down
+            docker-compose up -d --build
+            
+            # Nettoyage des images inutilisées
+            docker image prune -f
