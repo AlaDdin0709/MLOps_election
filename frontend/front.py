@@ -27,6 +27,7 @@ st.markdown("""
         --dark-red: #8B0000;
         --gold: #FFD700;
         --dark-text: #1a1a1a;
+        --light-gold: #FFF8DC;
     }
     
     /* Hide sidebar */
@@ -34,144 +35,15 @@ st.markdown("""
         display: none;
     }
     
-    /* Top Navigation Bar */
-    .top-nav {
-        background: linear-gradient(135deg, #E70013 0%, #8B0000 100%);
-        padding: 1rem 2rem;
-        border-radius: 0 0 20px 20px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 20px rgba(231, 0, 19, 0.3);
+    /* Animated background pattern */
+    @keyframes shimmer {
+        0% { background-position: -100% 0; }
+        100% { background-position: 200% 0; }
     }
     
-    .nav-title {
-        color: white;
-        font-size: 1.8rem;
-        font-weight: 700;
-        text-align: center;
-        margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        letter-spacing: 1px;
-    }
-    
-    .nav-subtitle {
-        color: #FFD700;
-        text-align: center;
-        font-size: 1rem;
-        margin-top: 0.3rem;
-        font-style: italic;
-    }
-    
-    /* Navigation Tabs */
-    .nav-tabs {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
-    }
-    
-    .nav-tab {
-        background: rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 0.6rem 1.5rem;
-        border-radius: 25px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 2px solid transparent;
-        font-weight: 600;
-        backdrop-filter: blur(10px);
-    }
-    
-    .nav-tab:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-        border-color: #FFD700;
-    }
-    
-    .nav-tab-active {
-        background: white;
-        color: #E70013;
-        border-color: #FFD700;
-    }
-    
-    /* Main Header */
-    .main-header {
-        background: linear-gradient(135deg, #E70013 0%, #C71585 100%);
-        padding: 2rem;
-        border-radius: 20px;
-        text-align: center;
-        color: white;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 24px rgba(231, 0, 19, 0.25);
-        border: 3px solid #FFD700;
-    }
-    
-    .main-header h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin: 0;
-        text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
-    }
-    
-    .main-header p {
-        font-size: 1.2rem;
-        margin-top: 0.5rem;
-        color: #FFD700;
-    }
-    
-    /* Metric cards with dark text for readability */
-    .metric-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        border-left: 5px solid #E70013;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        color: #1a1a1a;
-    }
-    
-    .metric-card h3 {
-        color: #E70013;
-        margin-bottom: 0.8rem;
-        font-size: 1.3rem;
-    }
-    
-    .metric-card p {
-        color: #333;
-        line-height: 1.6;
-        font-size: 1rem;
-    }
-    
-    .metric-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 8px 25px rgba(231, 0, 19, 0.2);
-    }
-    
-    /* Prediction result cards - Binary sentiment */
-    .prediction-positive {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        padding: 2rem;
-        border-radius: 20px;
-        color: white;
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: 700;
-        box-shadow: 0 8px 20px rgba(17, 153, 142, 0.4);
-        animation: slideIn 0.6s ease;
-        border: 3px solid #FFD700;
-    }
-    
-    .prediction-negative {
-        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        padding: 2rem;
-        border-radius: 20px;
-        color: white;
-        text-align: center;
-        font-size: 1.5rem;
-        font-weight: 700;
-        box-shadow: 0 8px 20px rgba(235, 51, 73, 0.4);
-        animation: slideIn 0.6s ease;
-        border: 3px solid #FFD700;
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
     }
     
     @keyframes slideIn {
@@ -185,89 +57,503 @@ st.markdown("""
         }
     }
     
-    /* Button styling */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
+        50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    /* Top Navigation Bar with enhanced styling */
+    .top-nav {
+        background: linear-gradient(135deg, #E70013 0%, #8B0000 50%, #E70013 100%);
+        background-size: 200% 100%;
+        animation: shimmer 6s ease-in-out infinite;
+        padding: 1.5rem 2rem;
+        border-radius: 0 0 25px 25px;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 30px rgba(231, 0, 19, 0.4);
+        border: 3px solid #FFD700;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .top-nav::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+        animation: rotate 20s linear infinite;
+    }
+    
+    .nav-title {
+        color: white;
+        font-size: 2rem;
+        font-weight: 800;
+        text-align: center;
+        margin: 0;
+        text-shadow: 3px 3px 8px rgba(0,0,0,0.5), 0 0 20px rgba(255, 215, 0, 0.5);
+        letter-spacing: 1.5px;
+        position: relative;
+        z-index: 1;
+        animation: fadeIn 1s ease-in;
+    }
+    
+    .nav-subtitle {
+        color: #FFD700;
+        text-align: center;
+        font-size: 1.1rem;
+        margin-top: 0.5rem;
+        font-style: italic;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        animation: fadeIn 1.5s ease-in;
+    }
+    
+    /* Enhanced navigation tabs */
+    .nav-tabs {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    /* Main Header with dynamic effects */
+    .main-header {
+        background: linear-gradient(135deg, #E70013 0%, #C71585 50%, #8B0000 100%);
+        background-size: 200% 200%;
+        animation: shimmer 8s ease-in-out infinite;
+        padding: 3rem 2rem;
+        border-radius: 25px;
+        text-align: center;
+        color: white;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 40px rgba(231, 0, 19, 0.35);
+        border: 4px solid #FFD700;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .main-header::before {
+        content: '🇹🇳';
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        font-size: 10rem;
+        opacity: 0.1;
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    .main-header h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
+        margin: 0;
+        text-shadow: 4px 4px 10px rgba(0,0,0,0.4), 0 0 30px rgba(255, 215, 0, 0.6);
+        position: relative;
+        z-index: 1;
+        animation: slideIn 0.8s ease-out;
+    }
+    
+    .main-header p {
+        font-size: 1.3rem;
+        margin-top: 0.8rem;
+        color: #FFD700;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+        text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+        animation: slideIn 1s ease-out;
+    }
+    
+    /* Enhanced metric cards with hover effects */
+    .metric-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f9f9f9 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+        border-left: 6px solid #E70013;
+        border-top: 2px solid #FFD700;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        color: #1a1a1a;
+        position: relative;
+        overflow: hidden;
+        animation: slideIn 0.6s ease-out;
+    }
+    
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .metric-card:hover::before {
+        left: 100%;
+    }
+    
+    .metric-card h3 {
+        color: #E70013;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .metric-card p {
+        color: #333;
+        line-height: 1.8;
+        font-size: 1.05rem;
+    }
+    
+    .metric-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(231, 0, 19, 0.25);
+        border-left-color: #FFD700;
+        animation: glow 2s ease-in-out infinite;
+    }
+    
+    /* Enhanced prediction result cards with animations */
+    .prediction-positive {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        padding: 2.5rem;
+        border-radius: 25px;
+        color: white;
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        box-shadow: 0 10px 30px rgba(17, 153, 142, 0.5);
+        animation: slideIn 0.8s ease, pulse 3s ease-in-out infinite;
+        border: 4px solid #FFD700;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .prediction-positive::before {
+        content: '✨';
+        position: absolute;
+        font-size: 8rem;
+        top: -30px;
+        right: -30px;
+        opacity: 0.2;
+        animation: rotate 10s linear infinite;
+    }
+    
+    .prediction-negative {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        padding: 2.5rem;
+        border-radius: 25px;
+        color: white;
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        box-shadow: 0 10px 30px rgba(235, 51, 73, 0.5);
+        animation: slideIn 0.8s ease, pulse 3s ease-in-out infinite;
+        border: 4px solid #FFD700;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .prediction-negative::before {
+        content: '⚠️';
+        position: absolute;
+        font-size: 8rem;
+        top: -30px;
+        right: -30px;
+        opacity: 0.2;
+        animation: rotate 10s linear infinite;
+    }
+    
+    /* Enhanced button styling */
     .stButton>button {
         background: linear-gradient(135deg, #E70013 0%, #C71585 100%);
         color: white;
         border: none;
-        border-radius: 12px;
-        padding: 0.7rem 2rem;
+        border-radius: 15px;
+        padding: 0.9rem 2.5rem;
         font-weight: 700;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(231, 0, 19, 0.3);
-        border: 2px solid #FFD700;
+        font-size: 1.05rem;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 6px 20px rgba(231, 0, 19, 0.4);
+        border: 3px solid #FFD700;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stButton>button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .stButton>button:hover::before {
+        width: 300px;
+        height: 300px;
     }
     
     .stButton>button:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(231, 0, 19, 0.5);
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 10px 35px rgba(231, 0, 19, 0.6);
     }
     
-    /* Text area styling */
+    /* Enhanced text area styling */
     .stTextArea textarea {
-        border-radius: 12px;
-        border: 3px solid #E70013;
+        border-radius: 15px;
+        border: 4px solid #E70013;
         font-family: 'Arial', sans-serif;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(231, 0, 19, 0.2);
     }
     
-    /* Info box with dark text */
+    .stTextArea textarea:focus {
+        border-color: #FFD700;
+        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
+        transform: scale(1.01);
+    }
+    
+    /* Enhanced info box */
     .info-box {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
+        padding: 2rem;
+        border-radius: 20px;
         color: white;
-        margin: 1.5rem 0;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        margin: 2rem 0;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        border: 3px solid #FFD700;
+        animation: slideIn 0.8s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .info-box::before {
+        content: '💡';
+        position: absolute;
+        font-size: 12rem;
+        bottom: -40px;
+        right: -40px;
+        opacity: 0.1;
     }
     
     .info-box h3 {
         color: #FFD700;
-        margin-bottom: 1rem;
+        margin-bottom: 1.2rem;
+        font-size: 1.6rem;
+        font-weight: 700;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
     }
     
-    /* Feature cards */
+    .info-box ol {
+        line-height: 2;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    
+    /* Enhanced feature cards */
     .feature-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 15px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        border-top: 4px solid #E70013;
-        margin-bottom: 1rem;
+        background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
+        padding: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        border-top: 5px solid #E70013;
+        border-right: 2px solid #FFD700;
+        margin-bottom: 1.5rem;
         color: #1a1a1a;
+        transition: all 0.4s ease;
+        animation: slideIn 0.6s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 0;
+        background: linear-gradient(180deg, #E70013, #FFD700);
+        transition: height 0.5s ease;
+    }
+    
+    .feature-card:hover::before {
+        height: 100%;
     }
     
     .feature-card h4 {
         color: #E70013;
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
+        font-size: 1.4rem;
+        font-weight: 700;
     }
     
     .feature-card ul {
         color: #333;
-        line-height: 1.8;
+        line-height: 2;
+        font-size: 1.05rem;
     }
     
-    /* Statistics section */
+    .feature-card:hover {
+        transform: translateX(10px);
+        box-shadow: 0 10px 35px rgba(231, 0, 19, 0.2);
+        border-right-width: 4px;
+    }
+    
+    /* Enhanced statistics section */
     .stats-header {
         background: linear-gradient(135deg, #E70013 0%, #8B0000 100%);
         color: white;
-        padding: 1rem;
-        border-radius: 10px;
+        padding: 1.5rem;
+        border-radius: 15px;
         text-align: center;
-        margin-bottom: 1.5rem;
-        border: 2px solid #FFD700;
+        margin-bottom: 2rem;
+        border: 3px solid #FFD700;
+        box-shadow: 0 6px 25px rgba(231, 0, 19, 0.4);
+        animation: slideIn 0.6s ease-out;
     }
     
-    /* Tunisian flag accent */
+    .stats-header h2 {
+        margin: 0;
+        font-size: 2rem;
+        font-weight: 800;
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+    }
+    
+    /* Tunisian flag accent with animation */
     .flag-accent {
         width: 100%;
-        height: 4px;
-        background: linear-gradient(90deg, #E70013 0%, #FFD700 50%, #E70013 100%);
-        margin: 2rem 0;
-        border-radius: 2px;
+        height: 6px;
+        background: linear-gradient(90deg, 
+            #E70013 0%, #E70013 45%, 
+            #FFD700 45%, #FFD700 55%, 
+            #E70013 55%, #E70013 100%);
+        margin: 2.5rem 0;
+        border-radius: 3px;
+        box-shadow: 0 2px 10px rgba(231, 0, 19, 0.4);
+        animation: shimmer 4s ease-in-out infinite;
+        background-size: 200% 100%;
+    }
+    
+    /* Enhanced metric display */
+    [data-testid="stMetricValue"] {
+        font-size: 2.5rem !important;
+        font-weight: 800 !important;
+        color: #E70013 !important;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+    }
+    
+    /* Enhanced dataframe styling */
+    [data-testid="stDataFrame"] {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        border: 2px solid #E70013;
+    }
+    
+    /* Enhanced download button */
+    .stDownloadButton>button {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+        color: white !important;
+        border: 3px solid #FFD700 !important;
+        border-radius: 15px !important;
+        padding: 0.8rem 2rem !important;
+        font-weight: 700 !important;
+        font-size: 1.05rem !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4) !important;
+    }
+    
+    .stDownloadButton>button:hover {
+        transform: translateY(-3px) scale(1.05) !important;
+        box-shadow: 0 8px 30px rgba(17, 153, 142, 0.6) !important;
+    }
+    
+    /* Progress bar styling */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, #E70013, #FFD700, #E70013);
+        background-size: 200% 100%;
+        animation: shimmer 2s linear infinite;
+    }
+    
+    /* File uploader styling */
+    [data-testid="stFileUploader"] {
+        border: 3px dashed #E70013;
+        border-radius: 15px;
+        padding: 2rem;
+        background: linear-gradient(145deg, #fff 0%, #f9f9f9 100%);
+        transition: all 0.3s ease;
+    }
+    
+    [data-testid="stFileUploader"]:hover {
+        border-color: #FFD700;
+        background: linear-gradient(145deg, #FFF8DC 0%, #fff 100%);
+        transform: scale(1.02);
+    }
+    
+    /* Success/Error messages enhancement */
+    .stAlert {
+        border-radius: 15px;
+        border-left: 6px solid #E70013;
+        animation: slideIn 0.5s ease-out;
+    }
+    
+    /* Footer styling */
+    .footer-text {
+        text-align: center;
+        color: #666;
+        padding: 2rem 1rem;
+        border-top: 3px solid #E70013;
+        margin-top: 3rem;
+        animation: fadeIn 1.5s ease-in;
+    }
+    
+    .footer-text p {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0.5rem 0;
+    }
+    
+    /* Spinner enhancement */
+    .stSpinner > div {
+        border-top-color: #E70013 !important;
+        border-right-color: #FFD700 !important;
     }
 </style>
 """, unsafe_allow_html=True)
+
 
 # Initialize session state
 if 'prediction_history' not in st.session_state:
@@ -278,7 +564,7 @@ if 'current_page' not in st.session_state:
 st.markdown("""
 <div class="top-nav">
     <h1 class="nav-title">🇹🇳 Analyse de Sentiment Tunisien - Élections</h1>
-    <p class="nav-subtitle">Plateforme MLOps pour l'analyse des opinions électorales</p>
+    <p class="nav-subtitle">✨ Plateforme MLOps pour l'analyse des opinions électorales ✨</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -708,8 +994,8 @@ elif st.session_state.current_page == "Stats":
 
 st.markdown('<div class="flag-accent"></div>', unsafe_allow_html=True)
 st.markdown("""
-<div style="text-align: center; color: #666; padding: 1rem;">
-    <p style="font-size: 1.1rem; font-weight: 600;">🇹🇳 Analyse de Sentiment Tunisien | MLOps Project © 2025</p>
-    <p style="font-size: 0.95rem; color: #E70013;">Développé pour les élections tunisiennes avec ❤️</p>
+<div class="footer-text">
+    <p style="font-size: 1.2rem; font-weight: 700;">🇹🇳 Analyse de Sentiment Tunisien | MLOps Project © 2025</p>
+    <p style="font-size: 1rem; color: #E70013; font-weight: 600;">✨ Développé pour les élections tunisiennes avec ❤️ ✨</p>
 </div>
 """, unsafe_allow_html=True)
