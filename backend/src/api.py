@@ -105,7 +105,17 @@ async def predict_csv(file: UploadFile = File(...)):
         df = pd.read_csv(io.BytesIO(content))
         if 'text' not in df.columns:
             raise HTTPException(status_code=400, detail='CSV must contain a `text` column')
-        preds = model.predict(df['text'].tolist())
+        
+        # Requis : vectorisation identique à /predict
+        if vectorizer is None:
+            raise HTTPException(status_code=503, detail='Vectorizer not available for CSV inference')
+            
+        # Transformer les textes
+        X = vectorizer.transform(df['text'].fillna('').tolist())
+        if hasattr(X, 'toarray'):
+            X = X.toarray()
+            
+        preds = model.predict(X)
         df['predict'] = preds
         out = io.StringIO()
         df.to_csv(out, index=False)

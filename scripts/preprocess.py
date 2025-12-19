@@ -188,11 +188,8 @@ def main():
     """
     try:
         print("="*80)
-        print("🧪 PREPROCESSING VALIDATION - Standalone Mode")
+        print("🧪 PREPROCESSING VALIDATION ")
         print("="*80)
-        print("⚠️  Note: This validates preprocessing without saving artifacts.")
-        print("   For training, use: python scripts/train.py")
-        print()
         
         # Charger les données
         data_path = DATA_DIR / 'version1.xlsx'

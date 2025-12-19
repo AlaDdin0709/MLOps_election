@@ -47,10 +47,10 @@ def download_from_run(client, run_id):
     # Get run info
     run = client.get_run(run_id)
     model_name = run.data.params.get('model_type', 'Unknown')
-    f1_score = run.data.metrics.get('f1_score', 0)
+    accuracy = run.data.metrics.get('accuracy', 0)
     
     print(f"   Model: {model_name}")
-    print(f"   F1-Score: {f1_score:.4f}")
+    print(f"   Accuracy: {accuracy:.4f}")
     
     # List all artifacts
     print("\n📋 Listing artifacts...")
@@ -191,16 +191,16 @@ def main():
     try:
         df = mlflow.search_runs(
             experiment_ids=[exp.experiment_id],
-            filter_string="metrics.f1_score > 0",
-            order_by=["start_time DESC"],  # Most recent first
-            max_results=10  # Check last 10 runs to be safe
+            filter_string="metrics.accuracy > 0",
+            order_by=["metrics.accuracy DESC", "start_time DESC"],  # Best accuracy first, then recent
+            max_results=10
         )
     except Exception as e:
         print(f"❌ Error searching runs: {e}")
         return 1
     
     if df.empty:
-        print("❌ No runs found with f1_score > 0")
+        print("❌ No runs found with accuracy > 0")
         return 1
     
     print(f"   Found {len(df)} recent runs\n")

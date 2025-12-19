@@ -574,7 +574,9 @@ elif st.session_state.current_page == "Lot":
                 status_text.info("⏳ Envoi du fichier au serveur...")
                 
                 try:
-                    files = {'file': uploaded.getvalue()}
+                    # Send as multipart/form-data with filename and content-type so FastAPI
+                    # receives a proper UploadFile (with filename) instead of raw bytes.
+                    files = {'file': (uploaded.name, uploaded.getvalue(), 'text/csv')}
                     r = requests.post(f"{API_URL}/predict_csv", files=files, timeout=60)
                     r.raise_for_status()
                     

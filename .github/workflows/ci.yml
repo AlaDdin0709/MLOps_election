@@ -59,11 +59,10 @@ jobs:
       - name: Arize AI Monitoring & Drift Check
         id: monitoring
         run: |
-          # 1. Envoyer les données à Arize
+          # Envoi automatique de la dernière version de donnée
           python scripts/monitor_arize.py
           
-          # 2. Vérifier la dérive (Drift)
-          # Le script sort en erreur (exit 1) SI dérive détectée
+          # Vérification intelligente avec boucle d'attente
           python scripts/check_drift_and_retrain.py
         continue-on-error: true
         env:

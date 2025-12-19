@@ -207,7 +207,7 @@ def train_ml_models(X_train, X_test, y_train, y_test, vectorizer=None):
     trained_models = {}
     failed_models = []
     best_run_id = None
-    best_f1 = -1
+    best_accuracy = -1
     
     for model_name, model in models.items():
         print(f"\n🔄 Entraînement: {model_name}")
@@ -341,11 +341,11 @@ def train_ml_models(X_train, X_test, y_train, y_test, vectorizer=None):
                 })
                 
                 # Track best run for later
-                if metrics['f1_score'] > best_f1:
-                    best_f1 = metrics['f1_score']
+                if metrics['accuracy'] > best_accuracy:
+                    best_accuracy = metrics['accuracy']
                     best_run_id = mlflow.active_run().info.run_id
                 
-                print(f"   ✅ Terminé - F1: {metrics['f1_score']:.4f} ({training_time:.2f}s)")
+                print(f"   ✅ Terminé - Acc: {metrics['accuracy']:.4f} ({training_time:.2f}s)")
                 
             except Exception as e:
                 print(f"   ❌ Erreur: {e}")
@@ -386,7 +386,7 @@ def save_results_summary(results):
     print("="*80)
     
     df_results = pd.DataFrame(results)
-    df_results = df_results.sort_values('f1_score', ascending=False)
+    df_results = df_results.sort_values('accuracy', ascending=False)
     
     print(df_results.to_string(index=False))
     
@@ -398,8 +398,8 @@ def save_results_summary(results):
     # Meilleur modèle
     best = df_results.iloc[0]
     print(f"\n🏆 MEILLEUR MODÈLE: {best['Model']}")
-    print(f"   F1-Score: {best['f1_score']:.4f}")
     print(f"   Accuracy: {best['accuracy']:.4f}")
+    print(f"   F1-Score: {best['f1_score']:.4f}")
     
     return df_results
 

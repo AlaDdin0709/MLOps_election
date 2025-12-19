@@ -17,8 +17,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 # Clés récupérées depuis le .env
-SPACE_ID = os.getenv('ARIZE_SPACE_KEY')
+# Prefer ARIZE_SPACE_ID; fallback to deprecated ARIZE_SPACE_KEY
+SPACE_ID = os.getenv('ARIZE_SPACE_ID') or os.getenv('ARIZE_SPACE_KEY')
 API_KEY = os.getenv('ARIZE_API_KEY')
+
+# If only the deprecated variable exists in the environment, set ARIZE_SPACE_ID
+# in-process so the Arize SDK reads the canonical var and does not emit a
+# deprecation warning from environment inspection.
+if not os.getenv('ARIZE_SPACE_ID') and os.getenv('ARIZE_SPACE_KEY'):
+    os.environ['ARIZE_SPACE_ID'] = os.getenv('ARIZE_SPACE_KEY')
+    try:
+        # remove deprecated key from process env so SDK won't detect it
+        del os.environ['ARIZE_SPACE_KEY']
+    except Exception:
+        pass
 
 def run_production_monitoring():
     if not SPACE_ID or not API_KEY:
@@ -26,26 +38,44 @@ def run_production_monitoring():
         return
 
     client = Client(space_id=SPACE_ID, api_key=API_KEY)
-    
-    # 1. Chargement des données réelles (version1)
-    data_path = BASE_DIR / 'data' / 'version1.xlsx'
-    if not data_path.exists():
-        print(f"❌ Erreur : Fichier non trouvé {data_path}")
+
+    # On cherche automatiquement le dernier fichier de version s'il n'est pas spécifié
+    prod_data_path = None
+    if len(sys.argv) > 1:
+        prod_data_path = Path(sys.argv[1])
+    else:
+        # Cherche tous les fichiers version*.xlsx et prend le plus récent (trié par nom)
+        version_files = sorted(list(BASE_DIR.glob('data/version*.xlsx')))
+        if len(version_files) > 1:
+            prod_data_path = version_files[-1] # Le dernier (ex: version2, version3...)
+            print(f"🔎 Détection automatique : Dernier fichier trouvé -> {prod_data_path.name}")
+
+    # 1. Chargement de la BASELINE (Toujours version1 par défaut pour le comparatif)
+    baseline_path = BASE_DIR / 'data' / 'version1.xlsx'
+    if not baseline_path.exists():
+        print(f"❌ Erreur : Fichier baseline non trouvé {baseline_path}")
         return
 
-    print(f"📦 Chargement des données : {data_path.name}")
-    df = pd.read_excel(data_path)
-    
-    # Génération d'IDs uniques et TIMESTAMPS (Crucial pour la visualisation)
-    df['prediction_id'] = [str(uuid.uuid4()) for _ in range(len(df))]
-    # Arize a besoin de timestamps pour placer les données sur une chronologie
+    print(f"📦 Chargement de la Baseline : {baseline_path.name}")
+    df_base = pd.read_excel(baseline_path)
+    df_base['prediction_id'] = [str(uuid.uuid4()) for _ in range(len(df_base))]
     import time
-    df['prediction_ts'] = int(time.time())
-    
-    # Split Simulation : Baseline vs Production
-    split_idx = int(len(df) * 0.8)
-    training_data = df.iloc[:split_idx].reset_index(drop=True)
-    production_data = df.iloc[split_idx:].reset_index(drop=True)
+    df_base['prediction_ts'] = int(time.time()) - 86400 # Simule hier pour la baseline
+
+    # 2. Chargement de la PRODUCTION
+    if prod_data_path and prod_data_path.exists() and prod_data_path != baseline_path:
+        print(f"📦 Chargement de la Production : {prod_data_path.name}")
+        production_data = pd.read_excel(prod_data_path)
+    else:
+        print("💡 Simulation via split de la baseline (car pas d'autre fichier version trouvé)...")
+        split_idx = int(len(df_base) * 0.8)
+        production_data = df_base.iloc[split_idx:].copy().reset_index(drop=True)
+        df_base = df_base.iloc[:split_idx].copy().reset_index(drop=True)
+
+    training_data = df_base
+    baseline_data = training_data # Alias pour plus de clarté
+    production_data['prediction_id'] = [str(uuid.uuid4()) for _ in range(len(production_data))]
+    production_data['prediction_ts'] = int(time.time())
 
     # Default: set baseline prediction_label to the actual target (so Arize baseline has labels)
     training_data['prediction_label'] = training_data['target']
@@ -67,75 +97,126 @@ def run_production_monitoring():
         except Exception as e:
             print(f"⚠️  Could not load model/vectorizer: {e}")
 
-    # Compute predictions for production_data only
-    if model is not None and vectorizer is not None and len(production_data) > 0:
-        texts = production_data['comments'].fillna('').astype(str)
-        try:
-            Xp = vectorizer.transform(texts)
+    def add_predictions(target_df, desc):
+        if model is not None and vectorizer is not None and len(target_df) > 0:
+            print(f"🧠 Génération des prédictions pour {desc}...")
+            texts = target_df['comments'].fillna('').astype(str)
             try:
-                preds = model.predict(Xp)
-            except Exception as e:
-                # Retry with dense array if model was trained on dense input
+                Xp = vectorizer.transform(texts)
                 if hasattr(Xp, 'toarray'):
-                    try:
-                        Xp = Xp.toarray()
-                        preds = model.predict(Xp)
-                    except Exception as e2:
-                        print(f"⚠️  Error during model.predict with dense input: {e2}")
-                        preds = [None] * len(production_data)
+                    Xp = Xp.toarray()
+                
+                target_df['prediction_label'] = model.predict(Xp)
+                
+                # Correction SVC : Certains modèles n'ont pas predict_proba si probas non activées à l'entraînement
+                if hasattr(model, 'predict_proba'):
+                    probs = model.predict_proba(Xp)
+                    if probs is not None and probs.shape[1] >= 2:
+                        target_df['score_0'] = probs[:, 0]
+                        target_df['score_1'] = probs[:, 1]
+                    else:
+                        target_df['score_0'] = None
+                        target_df['score_1'] = None
                 else:
-                    print(f"⚠️  Error during model.predict: {e}")
-                    preds = [None] * len(production_data)
-        except Exception as e:
-            print(f"⚠️  Error preparing inputs for prediction: {e}")
-            preds = [None] * len(production_data)
-
-        # probabilities (use current Xp which may be dense)
-        probs = None
-        try:
-            probs = model.predict_proba(Xp)
-        except Exception as e:
-            # Retry with dense input if needed
-            try:
-                if hasattr(Xp, 'toarray'):
-                    probs = model.predict_proba(Xp.toarray())
-            except Exception:
-                probs = None
-
-        production_data['prediction_label'] = preds
-        if probs is not None and probs.shape[1] >= 2:
-            production_data['score_0'] = probs[:, 0]
-            production_data['score_1'] = probs[:, 1]
-        elif probs is not None and probs.shape[1] == 1:
-            production_data['score_0'] = probs[:, 0]
-            production_data['score_1'] = 1 - probs[:, 0]
+                    print(f"⚠️  Note : Le modèle {desc} ne supporte pas predict_proba. Scores ignorés.")
+                    target_df['score_0'] = None
+                    target_df['score_1'] = None
+            except Exception as e:
+                print(f"⚠️  Erreur prédiction {desc}: {e}")
+                target_df['prediction_label'] = target_df['target']
+                target_df['score_0'] = None
+                target_df['score_1'] = None
         else:
-            production_data['score_0'] = None
-            production_data['score_1'] = None
+            target_df['prediction_label'] = target_df['target']
+            target_df['score_0'] = None
+            target_df['score_1'] = None
+
+    # Ajouter les prédictions aux deux datasets
+    add_predictions(baseline_data, "Baseline")
+    add_predictions(production_data, "Production")
+
+    # Optionally generate embeddings for semantic drift visualization
+    # Wrapped in try/except because EmbeddingGenerator API varies across Arize versions
+    use_embeddings = False
+    try:
+        from arize.pandas.embeddings import EmbeddingGenerator
+        from arize.utils.types import EmbeddingColumnNames
+
+        print("🧠 Génération des Embeddings NLP (cela peut prendre un moment)...")
+        
+        # Try different use_case values depending on Arize SDK version
+        generator = None
+        for use_case in ["NLP", "nlp", "text_classification", "classification"]:
+            try:
+                generator = EmbeddingGenerator.from_use_case(
+                    use_case=use_case,
+                    model_name="distilbert-base-uncased",
+                    tokenizer_max_length=512,
+                    batch_size=100
+                )
+                break
+            except (ValueError, TypeError):
+                continue
+        
+        if generator is None:
+            # Fallback: try default constructor if from_use_case doesn't work
+            try:
+                generator = EmbeddingGenerator(
+                    model_name="distilbert-base-uncased",
+                    tokenizer_max_length=512,
+                    batch_size=100
+                )
+            except Exception:
+                raise RuntimeError("Could not initialize EmbeddingGenerator")
+        
+        baseline_data = generator.generate_embeddings(
+            dataframe=baseline_data,
+            data_column_name="comments",
+            embedding_name="comments_embedding"
+        )
+        production_data = generator.generate_embeddings(
+            dataframe=production_data,
+            data_column_name="comments",
+            embedding_name="comments_embedding"
+        )
+        use_embeddings = True
+        print("✅ Embeddings générés avec succès!")
+        
+    except Exception as e:
+        print(f"⚠️ Embeddings non disponibles : {e}")
+        print("💡 Envoi des données sans visualisation d'embeddings (drift features toujours actif).")
+    
+    # Build schema with or without embeddings
+    if use_embeddings:
+        from arize.utils.types import EmbeddingColumnNames
+        schema = Schema(
+            prediction_id_column_name="prediction_id",
+            timestamp_column_name="prediction_ts",
+            prediction_label_column_name="prediction_label",
+            prediction_score_column_name="score_1",
+            actual_label_column_name="target",
+            feature_column_names=['comments'],
+            embedding_feature_column_names=[
+                EmbeddingColumnNames(
+                    vector_column_name="comments_embedding_vector",
+                    data_column_name="comments",
+                ),
+            ]
+        )
     else:
-        # fallback: set production prediction_label to actuals to avoid missing predictions
-        production_data['prediction_label'] = production_data['target']
-        production_data['score_0'] = None
-        production_data['score_1'] = None
-    
-    # Enriquissement pour NLP : Ajout d'Embedding (optionnel mais recommandé pour Arize)
-    # Arize peut autogénérer des embeddings si on lui donne le texte, 
-    # mais pour activer "Embedding Drift", on définit le schema NLP.
-    
-    schema = Schema(
-        prediction_id_column_name="prediction_id",
-        timestamp_column_name="prediction_ts",
-        prediction_label_column_name="prediction_label",
-        prediction_score_column_name="score_1",
-        actual_label_column_name="target",
-        feature_column_names=['comments'],
-    )
+        schema = Schema(
+            prediction_id_column_name="prediction_id",
+            timestamp_column_name="prediction_ts",
+            prediction_label_column_name="prediction_label",
+            prediction_score_column_name="score_1",
+            actual_label_column_name="target",
+            feature_column_names=['comments']
+        )
 
-
-    print(f"📡 Envoi de la BASELINE (Entraînement) : {len(training_data)} lignes...")
+    print(f"📡 Envoi de la BASELINE (Entraînement) : {len(baseline_data)} lignes...")
     # Pour la baseline, on envoie tout (features, predictions, actuals)
     res_train = client.log(
-        dataframe=training_data,
+        dataframe=baseline_data,
         model_id='election_sentiment_tunisia',
         model_version='1.0',
         environment=Environments.TRAINING,
@@ -154,12 +235,27 @@ def run_production_monitoring():
         schema=schema
     )
 
-    if res_prod.status_code == 200:
+    # Diagnostic: always print responses for both requests to aid troubleshooting
+    try:
+        print(f"🔁 Arize baseline response: status={res_train.status_code}")
+        if hasattr(res_train, 'text'):
+            print(f"🔁 baseline text: {res_train.text}")
+    except Exception:
+        pass
+
+    try:
+        print(f"🔁 Arize production response: status={res_prod.status_code}")
+        if hasattr(res_prod, 'text'):
+            print(f"🔁 production text: {res_prod.text}")
+    except Exception:
+        pass
+
+    if getattr(res_prod, 'status_code', None) == 200 and getattr(res_train, 'status_code', None) in (200, 201):
         print("\n✅ SUCCÈS ! Monitoring activé.")
         print("👉 Va sur Arize, cherche le modèle 'election_sentiment_tunisia'")
         print("💡 Note : L'analyse du Drift peut prendre 5-10 minutes à apparaître.")
     else:
-        print(f"\n❌ Erreur lors de l'envoi : {res_prod.text}")
+        print("\n❌ Un ou plusieurs envois ont échoué. Vérifiez les réponses ci-dessus et vos clés Arize.")
 
 if __name__ == "__main__":
     run_production_monitoring()
