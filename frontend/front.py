@@ -20,14 +20,16 @@ st.set_page_config(
 
 st.markdown("""
 <style>
-    /* Tunisian theme colors */
+    /* Tunisian-inspired sophisticated color palette */
     :root {
-        --tunisian-red: #E70013;
-        --tunisian-white: #FFFFFF;
-        --dark-red: #8B0000;
-        --gold: #FFD700;
-        --dark-text: #1a1a1a;
-        --light-gold: #FFF8DC;
+        --primary-burgundy: #8B1538;
+        --soft-terracotta: #D4755B;
+        --warm-sand: #F5E6D3;
+        --deep-navy: #2C3E50;
+        --golden-accent: #D4AF37;
+        --soft-blush: #F8EDE3;
+        --olive-green: #6B7F5C;
+        --deep-crimson: #9B1B30;
     }
     
     /* Hide sidebar */
@@ -35,18 +37,8 @@ st.markdown("""
         display: none;
     }
     
-    /* Animated background pattern */
-    @keyframes shimmer {
-        0% { background-position: -100% 0; }
-        100% { background-position: 200% 0; }
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-    }
-    
-    @keyframes slideIn {
+    /* Smooth animations */
+    @keyframes fadeInUp {
         from {
             opacity: 0;
             transform: translateY(30px);
@@ -57,499 +49,504 @@ st.markdown("""
         }
     }
     
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+    @keyframes floatPattern {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(5deg); }
     }
     
-    @keyframes glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.4); }
-        50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.8); }
+    @keyframes shimmerGold {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
     }
     
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(212, 175, 55, 0.6); }
     }
     
-    /* Top Navigation Bar with enhanced styling */
+    @keyframes slideFromRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Global styling with Tunisian aesthetic */
+    .stApp {
+        background: linear-gradient(135deg, #F8EDE3 0%, #F5E6D3 50%, #FFF 100%);
+        font-family: 'Georgia', 'Palatino', serif;
+    }
+    
+    /* Elegant top navigation with Tunisian patterns */
     .top-nav {
-        background: linear-gradient(135deg, #E70013 0%, #8B0000 50%, #E70013 100%);
-        background-size: 200% 100%;
-        animation: shimmer 6s ease-in-out infinite;
-        padding: 1.5rem 2rem;
-        border-radius: 0 0 25px 25px;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 30px rgba(231, 0, 19, 0.4);
-        border: 3px solid #FFD700;
+        background: linear-gradient(135deg, #8B1538 0%, #9B1B30 50%, #8B1538 100%);
+        padding: 2.5rem 3rem;
+        border-radius: 0;
+        margin-bottom: 0;
+        box-shadow: 0 6px 25px rgba(139, 21, 56, 0.25);
         position: relative;
         overflow: hidden;
+        border-bottom: 4px solid #D4AF37;
     }
     
     .top-nav::before {
         content: '';
         position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
-        animation: rotate 20s linear infinite;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(212, 175, 55, 0.03) 35px, rgba(212, 175, 55, 0.03) 70px);
+        pointer-events: none;
     }
     
     .nav-title {
-        color: white;
-        font-size: 2rem;
-        font-weight: 800;
+        color: #F5E6D3;
+        font-size: 2.5rem;
+        font-weight: 700;
         text-align: center;
         margin: 0;
-        text-shadow: 3px 3px 8px rgba(0,0,0,0.5), 0 0 20px rgba(255, 215, 0, 0.5);
-        letter-spacing: 1.5px;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        letter-spacing: 0.5px;
         position: relative;
         z-index: 1;
-        animation: fadeIn 1s ease-in;
+        animation: fadeInUp 0.8s ease-out;
     }
     
     .nav-subtitle {
-        color: #FFD700;
+        color: #D4AF37;
         text-align: center;
-        font-size: 1.1rem;
-        margin-top: 0.5rem;
+        font-size: 1rem;
+        margin-top: 0.75rem;
         font-style: italic;
-        font-weight: 500;
+        font-weight: 400;
         position: relative;
         z-index: 1;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        animation: fadeIn 1.5s ease-in;
+        letter-spacing: 1px;
+        animation: fadeInUp 1s ease-out;
     }
     
-    /* Enhanced navigation tabs */
-    .nav-tabs {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        margin-top: 1rem;
-        flex-wrap: wrap;
+    /* Refined navigation tabs */
+    .stButton>button {
+        background: transparent;
+        color: #2C3E50;
+        border: 2px solid #8B1538;
+        border-radius: 8px;
+        padding: 0.7rem 1.8rem;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        letter-spacing: 0.3px;
+        box-shadow: 0 2px 8px rgba(139, 21, 56, 0.15);
+        background: linear-gradient(135deg, #FFF 0%, #F8EDE3 100%);
     }
     
-    /* Main Header with dynamic effects */
+    .stButton>button:hover {
+        background: linear-gradient(135deg, #8B1538 0%, #9B1B30 100%);
+        color: #F5E6D3;
+        border-color: #D4AF37;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(139, 21, 56, 0.3);
+    }
+    
+    /* Active button state */
+    .stButton>button[data-baseweb="button"] {
+        background: linear-gradient(135deg, #8B1538 0%, #9B1B30 100%);
+        color: #F5E6D3;
+        border-color: #D4AF37;
+    }
+    
+    /* Main header with elegant design */
     .main-header {
-        background: linear-gradient(135deg, #E70013 0%, #C71585 50%, #8B0000 100%);
-        background-size: 200% 200%;
-        animation: shimmer 8s ease-in-out infinite;
-        padding: 3rem 2rem;
-        border-radius: 25px;
+        background: linear-gradient(135deg, #8B1538 0%, #6B7F5C 100%);
+        padding: 3.5rem 2.5rem;
+        border-radius: 15px;
         text-align: center;
         color: white;
-        margin-bottom: 2.5rem;
-        box-shadow: 0 10px 40px rgba(231, 0, 19, 0.35);
-        border: 4px solid #FFD700;
+        margin: 3rem 0 2.5rem;
+        box-shadow: 0 8px 30px rgba(139, 21, 56, 0.2);
+        border: 3px solid #D4AF37;
         position: relative;
         overflow: hidden;
+        animation: fadeInUp 0.8s ease-out;
     }
     
-    .main-header::before {
-        content: '🇹🇳';
+    .main-header::after {
+        content: '🗳️';
         position: absolute;
-        top: -20px;
-        right: -20px;
-        font-size: 10rem;
-        opacity: 0.1;
-        animation: pulse 4s ease-in-out infinite;
+        top: -30px;
+        right: -30px;
+        font-size: 12rem;
+        opacity: 0.08;
+        animation: floatPattern 6s ease-in-out infinite;
     }
     
     .main-header h1 {
-        font-size: 2.8rem;
-        font-weight: 800;
+        font-size: 2.5rem;
+        font-weight: 700;
         margin: 0;
-        text-shadow: 4px 4px 10px rgba(0,0,0,0.4), 0 0 30px rgba(255, 215, 0, 0.6);
+        text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
         position: relative;
         z-index: 1;
-        animation: slideIn 0.8s ease-out;
+        color: #F5E6D3;
+        letter-spacing: 0.5px;
     }
     
     .main-header p {
-        font-size: 1.3rem;
-        margin-top: 0.8rem;
-        color: #FFD700;
-        font-weight: 600;
+        font-size: 1.2rem;
+        margin-top: 1rem;
+        color: #D4AF37;
+        font-weight: 400;
         position: relative;
         z-index: 1;
-        text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-        animation: slideIn 1s ease-out;
+        font-style: italic;
     }
     
-    /* Enhanced metric cards with hover effects */
+    /* Sophisticated metric cards */
     .metric-card {
-        background: linear-gradient(145deg, #ffffff 0%, #f9f9f9 100%);
-        padding: 2rem;
-        border-radius: 20px;
-        box-shadow: 0 5px 20px rgba(0,0,0,0.12);
-        border-left: 6px solid #E70013;
-        border-top: 2px solid #FFD700;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        color: #1a1a1a;
+        background: linear-gradient(145deg, #FFFFFF 0%, #F8EDE3 100%);
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-left: 5px solid #8B1538;
+        border-bottom: 2px solid #D4AF37;
+        transition: all 0.4s ease;
+        color: #2C3E50;
         position: relative;
         overflow: hidden;
-        animation: slideIn 0.6s ease-out;
+        animation: fadeInUp 0.6s ease-out;
+        margin-bottom: 1.5rem;
     }
     
     .metric-card::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.2), transparent);
-        transition: left 0.5s;
-    }
-    
-    .metric-card:hover::before {
-        left: 100%;
+        top: -2px;
+        right: -2px;
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), transparent);
+        border-radius: 0 12px 0 0;
     }
     
     .metric-card h3 {
-        color: #E70013;
+        color: #8B1538;
         margin-bottom: 1rem;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         font-weight: 700;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.7rem;
     }
     
     .metric-card p {
-        color: #333;
-        line-height: 1.8;
-        font-size: 1.05rem;
+        color: #2C3E50;
+        line-height: 1.7;
+        font-size: 1rem;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
     }
     
     .metric-card:hover {
-        transform: translateY(-12px) scale(1.02);
-        box-shadow: 0 15px 40px rgba(231, 0, 19, 0.25);
-        border-left-color: #FFD700;
-        animation: glow 2s ease-in-out infinite;
+        transform: translateY(-8px);
+        box-shadow: 0 12px 35px rgba(139, 21, 56, 0.15);
+        border-left-width: 8px;
+        animation: pulseGlow 2s ease-in-out infinite;
     }
     
-    /* Enhanced prediction result cards with animations */
+    /* Enhanced prediction cards with refined styling */
     .prediction-positive {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-        padding: 2.5rem;
-        border-radius: 25px;
+        background: linear-gradient(135deg, #6B7F5C 0%, #8BA888 100%);
+        padding: 3rem;
+        border-radius: 15px;
         color: white;
         text-align: center;
-        font-size: 1.6rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        box-shadow: 0 10px 30px rgba(17, 153, 142, 0.5);
-        animation: slideIn 0.8s ease, pulse 3s ease-in-out infinite;
-        border: 4px solid #FFD700;
+        box-shadow: 0 8px 25px rgba(107, 127, 92, 0.3);
+        animation: fadeInUp 0.8s ease;
+        border: 3px solid #D4AF37;
         position: relative;
         overflow: hidden;
     }
     
     .prediction-positive::before {
-        content: '✨';
+        content: '✓';
         position: absolute;
-        font-size: 8rem;
-        top: -30px;
-        right: -30px;
-        opacity: 0.2;
-        animation: rotate 10s linear infinite;
+        font-size: 10rem;
+        top: -40px;
+        right: -40px;
+        opacity: 0.1;
+        font-weight: 700;
     }
     
     .prediction-negative {
-        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
-        padding: 2.5rem;
-        border-radius: 25px;
+        background: linear-gradient(135deg, #8B1538 0%, #9B1B30 100%);
+        padding: 3rem;
+        border-radius: 15px;
         color: white;
         text-align: center;
-        font-size: 1.6rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        box-shadow: 0 10px 30px rgba(235, 51, 73, 0.5);
-        animation: slideIn 0.8s ease, pulse 3s ease-in-out infinite;
-        border: 4px solid #FFD700;
+        box-shadow: 0 8px 25px rgba(139, 21, 56, 0.3);
+        animation: fadeInUp 0.8s ease;
+        border: 3px solid #D4AF37;
         position: relative;
         overflow: hidden;
     }
     
     .prediction-negative::before {
-        content: '⚠️';
+        content: '✗';
         position: absolute;
-        font-size: 8rem;
-        top: -30px;
-        right: -30px;
-        opacity: 0.2;
-        animation: rotate 10s linear infinite;
-    }
-    
-    /* Enhanced button styling */
-    .stButton>button {
-        background: linear-gradient(135deg, #E70013 0%, #C71585 100%);
-        color: white;
-        border: none;
-        border-radius: 15px;
-        padding: 0.9rem 2.5rem;
+        font-size: 10rem;
+        top: -40px;
+        right: -40px;
+        opacity: 0.1;
         font-weight: 700;
-        font-size: 1.05rem;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 6px 20px rgba(231, 0, 19, 0.4);
-        border: 3px solid #FFD700;
-        position: relative;
-        overflow: hidden;
     }
     
-    .stButton>button::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.3);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    .stButton>button:hover::before {
-        width: 300px;
-        height: 300px;
-    }
-    
-    .stButton>button:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 10px 35px rgba(231, 0, 19, 0.6);
-    }
-    
-    /* Enhanced text area styling */
+    /* Refined text area styling */
     .stTextArea textarea {
-        border-radius: 15px;
-        border: 4px solid #E70013;
-        font-family: 'Arial', sans-serif;
-        font-size: 1.15rem;
-        padding: 1rem;
+        border-radius: 10px;
+        border: 3px solid #8B1538;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        font-size: 1.05rem;
+        padding: 1.2rem;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(231, 0, 19, 0.2);
+        box-shadow: 0 3px 12px rgba(139, 21, 56, 0.15);
+        background: #FFFFFF;
     }
     
     .stTextArea textarea:focus {
-        border-color: #FFD700;
-        box-shadow: 0 6px 25px rgba(255, 215, 0, 0.4);
-        transform: scale(1.01);
+        border-color: #D4AF37;
+        box-shadow: 0 5px 20px rgba(212, 175, 55, 0.25);
+        outline: none;
     }
     
-    /* Enhanced info box */
+    /* Sophisticated info box */
     .info-box {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 20px;
+        background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+        padding: 2.5rem;
+        border-radius: 12px;
         color: white;
-        margin: 2rem 0;
-        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        border: 3px solid #FFD700;
-        animation: slideIn 0.8s ease-out;
+        margin: 2.5rem 0;
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.25);
+        border: 2px solid #D4AF37;
+        animation: fadeInUp 0.8s ease-out;
         position: relative;
         overflow: hidden;
     }
     
     .info-box::before {
-        content: '💡';
-        position: absolute;
-        font-size: 12rem;
-        bottom: -40px;
-        right: -40px;
-        opacity: 0.1;
-    }
-    
-    .info-box h3 {
-        color: #FFD700;
-        margin-bottom: 1.2rem;
-        font-size: 1.6rem;
-        font-weight: 700;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .info-box ol {
-        line-height: 2;
-        font-size: 1.1rem;
-        font-weight: 500;
-    }
-    
-    /* Enhanced feature cards */
-    .feature-card {
-        background: linear-gradient(145deg, #ffffff 0%, #f5f5f5 100%);
-        padding: 2rem;
-        border-radius: 20px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-        border-top: 5px solid #E70013;
-        border-right: 2px solid #FFD700;
-        margin-bottom: 1.5rem;
-        color: #1a1a1a;
-        transition: all 0.4s ease;
-        animation: slideIn 0.6s ease-out;
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .feature-card::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
-        width: 4px;
-        height: 0;
-        background: linear-gradient(180deg, #E70013, #FFD700);
-        transition: height 0.5s ease;
+        width: 100%;
+        height: 100%;
+        background-image: repeating-linear-gradient(
+            45deg,
+            transparent,
+            transparent 40px,
+            rgba(212, 175, 55, 0.03) 40px,
+            rgba(212, 175, 55, 0.03) 80px
+        );
+        pointer-events: none;
     }
     
-    .feature-card:hover::before {
-        height: 100%;
+    .info-box h3 {
+        color: #D4AF37;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .info-box ol {
+        line-height: 2;
+        font-size: 1.05rem;
+        font-weight: 400;
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Refined feature cards */
+    .feature-card {
+        background: linear-gradient(145deg, #FFFFFF 0%, #F8EDE3 100%);
+        padding: 2.2rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        border-top: 4px solid #8B1538;
+        border-right: 2px solid #D4AF37;
+        margin-bottom: 1.5rem;
+        color: #2C3E50;
+        transition: all 0.4s ease;
+        animation: fadeInUp 0.6s ease-out;
+        position: relative;
     }
     
     .feature-card h4 {
-        color: #E70013;
-        margin-bottom: 1rem;
-        font-size: 1.4rem;
+        color: #8B1538;
+        margin-bottom: 1.2rem;
+        font-size: 1.3rem;
         font-weight: 700;
     }
     
     .feature-card ul {
-        color: #333;
-        line-height: 2;
-        font-size: 1.05rem;
+        color: #2C3E50;
+        line-height: 1.9;
+        font-size: 1rem;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
     }
     
     .feature-card:hover {
-        transform: translateX(10px);
-        box-shadow: 0 10px 35px rgba(231, 0, 19, 0.2);
+        transform: translateX(8px);
+        box-shadow: 0 8px 30px rgba(139, 21, 56, 0.15);
         border-right-width: 4px;
     }
     
-    /* Enhanced statistics section */
+    /* Elegant statistics section */
     .stats-header {
-        background: linear-gradient(135deg, #E70013 0%, #8B0000 100%);
+        background: linear-gradient(135deg, #8B1538 0%, #6B7F5C 100%);
         color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
+        padding: 2rem;
+        border-radius: 12px;
         text-align: center;
-        margin-bottom: 2rem;
-        border: 3px solid #FFD700;
-        box-shadow: 0 6px 25px rgba(231, 0, 19, 0.4);
-        animation: slideIn 0.6s ease-out;
+        margin-bottom: 2.5rem;
+        border: 3px solid #D4AF37;
+        box-shadow: 0 5px 20px rgba(139, 21, 56, 0.25);
+        animation: fadeInUp 0.6s ease-out;
     }
     
     .stats-header h2 {
         margin: 0;
-        font-size: 2rem;
-        font-weight: 800;
-        text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #F5E6D3;
     }
     
-    /* Tunisian flag accent with animation */
+    /* Tunisian decorative accent */
     .flag-accent {
         width: 100%;
-        height: 6px;
+        height: 5px;
         background: linear-gradient(90deg, 
-            #E70013 0%, #E70013 45%, 
-            #FFD700 45%, #FFD700 55%, 
-            #E70013 55%, #E70013 100%);
+            #8B1538 0%, #8B1538 48%, 
+            #D4AF37 48%, #D4AF37 52%, 
+            #8B1538 52%, #8B1538 100%);
         margin: 2.5rem 0;
         border-radius: 3px;
-        box-shadow: 0 2px 10px rgba(231, 0, 19, 0.4);
-        animation: shimmer 4s ease-in-out infinite;
-        background-size: 200% 100%;
+        box-shadow: 0 2px 8px rgba(139, 21, 56, 0.2);
     }
     
-    /* Enhanced metric display */
+    /* Refined metric display */
     [data-testid="stMetricValue"] {
-        font-size: 2.5rem !important;
-        font-weight: 800 !important;
-        color: #E70013 !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        font-size: 2.3rem !important;
+        font-weight: 700 !important;
+        color: #8B1538 !important;
     }
     
     [data-testid="stMetricLabel"] {
-        font-size: 1.1rem !important;
+        font-size: 1rem !important;
         font-weight: 600 !important;
-        color: #333 !important;
+        color: #2C3E50 !important;
     }
     
     /* Enhanced dataframe styling */
     [data-testid="stDataFrame"] {
-        border-radius: 15px;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        border: 2px solid #E70013;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+        border: 2px solid #8B1538;
     }
     
-    /* Enhanced download button */
+    /* Refined download button */
     .stDownloadButton>button {
-        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+        background: linear-gradient(135deg, #6B7F5C 0%, #8BA888 100%) !important;
         color: white !important;
-        border: 3px solid #FFD700 !important;
-        border-radius: 15px !important;
+        border: 2px solid #D4AF37 !important;
+        border-radius: 10px !important;
         padding: 0.8rem 2rem !important;
-        font-weight: 700 !important;
-        font-size: 1.05rem !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
         transition: all 0.3s ease !important;
-        box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4) !important;
+        box-shadow: 0 4px 15px rgba(107, 127, 92, 0.25) !important;
     }
     
     .stDownloadButton>button:hover {
-        transform: translateY(-3px) scale(1.05) !important;
-        box-shadow: 0 8px 30px rgba(17, 153, 142, 0.6) !important;
+        transform: translateY(-3px) !important;
+        box-shadow: 0 6px 20px rgba(107, 127, 92, 0.35) !important;
     }
     
     /* Progress bar styling */
     .stProgress > div > div {
-        background: linear-gradient(90deg, #E70013, #FFD700, #E70013);
+        background: linear-gradient(90deg, #8B1538, #D4AF37, #8B1538);
         background-size: 200% 100%;
-        animation: shimmer 2s linear infinite;
+        animation: shimmerGold 2s linear infinite;
     }
     
     /* File uploader styling */
     [data-testid="stFileUploader"] {
-        border: 3px dashed #E70013;
-        border-radius: 15px;
+        border: 3px dashed #8B1538;
+        border-radius: 12px;
         padding: 2rem;
-        background: linear-gradient(145deg, #fff 0%, #f9f9f9 100%);
+        background: linear-gradient(145deg, #FFF 0%, #F8EDE3 100%);
         transition: all 0.3s ease;
     }
     
     [data-testid="stFileUploader"]:hover {
-        border-color: #FFD700;
-        background: linear-gradient(145deg, #FFF8DC 0%, #fff 100%);
-        transform: scale(1.02);
+        border-color: #D4AF37;
+        background: linear-gradient(145deg, #F8EDE3 0%, #F5E6D3 100%);
     }
     
-    /* Success/Error messages enhancement */
+    /* Alert messages enhancement */
     .stAlert {
-        border-radius: 15px;
-        border-left: 6px solid #E70013;
-        animation: slideIn 0.5s ease-out;
+        border-radius: 10px;
+        border-left: 5px solid #8B1538;
+        animation: fadeInUp 0.5s ease-out;
     }
     
     /* Footer styling */
     .footer-text {
         text-align: center;
-        color: #666;
-        padding: 2rem 1rem;
-        border-top: 3px solid #E70013;
+        color: #2C3E50;
+        padding: 2.5rem 1rem;
+        border-top: 2px solid #D4AF37;
         margin-top: 3rem;
-        animation: fadeIn 1.5s ease-in;
+        animation: fadeInUp 1.5s ease-in;
+        background: linear-gradient(135deg, #F8EDE3 0%, #FFF 100%);
     }
     
     .footer-text p {
-        font-size: 1.1rem;
-        font-weight: 600;
+        font-size: 1rem;
+        font-weight: 500;
         margin: 0.5rem 0;
     }
     
     /* Spinner enhancement */
     .stSpinner > div {
-        border-top-color: #E70013 !important;
-        border-right-color: #FFD700 !important;
+        border-top-color: #8B1538 !important;
+        border-right-color: #D4AF37 !important;
+    }
+    
+    /* Cultural pattern overlay */
+    .cultural-pattern {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: -1;
+        opacity: 0.02;
+        background-image: 
+            repeating-linear-gradient(45deg, transparent, transparent 50px, #8B1538 50px, #8B1538 51px),
+            repeating-linear-gradient(-45deg, transparent, transparent 50px, #D4AF37 50px, #D4AF37 51px);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -563,8 +560,8 @@ if 'current_page' not in st.session_state:
 
 st.markdown("""
 <div class="top-nav">
-    <h1 class="nav-title">🇹🇳 Analyse de Sentiment Tunisien - Élections</h1>
-    <p class="nav-subtitle">✨ Plateforme MLOps pour l'analyse des opinions électorales ✨</p>
+    <h1 class="nav-title">🇹🇳 Analyse de Sentiment - Élections Tunisiennes</h1>
+    <p class="nav-subtitle">Plateforme d'Intelligence Artificielle pour la Démocratie</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -689,308 +686,354 @@ if st.session_state.current_page == "Accueil":
             <li><strong>Analyse Simple</strong> : Cliquez sur "Analyse" pour analyser un texte en dialecte tunisien</li>
             <li><strong>Analyse par Lot</strong> : Téléchargez un fichier CSV pour analyser plusieurs commentaires</li>
             <li><strong>Statistiques</strong> : Consultez l'historique et les tendances de vos analyses</li>
-            <li><strong>Résultats</strong> : Obtenez des prédictions Pour (1) ou Contre (0) avec un score de confiance</li>
+            <li><strong>Résultats</strong> : Obtenez des prédictions précises avec scores de confiance</li>
         </ol>
     </div>
     """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="footer-text"><p>🇹🇳 Plateforme développée pour analyser l\'opinion publique tunisienne</p></div>', unsafe_allow_html=True)
 
 elif st.session_state.current_page == "Analyse":
-    st.markdown("### 💬 Analyse de Sentiment - Texte Simple")
-    st.markdown("Entrez un commentaire en dialecte tunisien pour analyser son sentiment (Pour ou Contre)")
+    st.markdown("""
+    <div class="main-header">
+        <h1>💬 Analyse de Sentiment Individuelle</h1>
+        <p>Analysez un commentaire en dialecte tunisien</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    text = st.text_area(
-        "📝 Votre texte",
-        value="",
-        placeholder="مثال: هذا المرشح يعمل من أجل مصلحة الشعب التونسي",
+    user_input = st.text_area(
+        "Entrez le texte à analyser:",
         height=150,
-        help="Entrez un commentaire en dialecte tunisien"
+        placeholder="Exemple: المرشح هذا باهي برشا، نحبو ونتمنى يربح"
     )
     
-    col_btn1, col_btn2 = st.columns([1, 1])
+    col1, col2, col3 = st.columns([1, 2, 1])
     
-    with col_btn1:
-        predict_button = st.button("🔍 Analyser", use_container_width=True)
+    with col2:
+        analyze_button = st.button("🔍 Analyser le Sentiment", use_container_width=True)
     
-    with col_btn2:
-        if st.button("🗑️ Effacer", use_container_width=True):
-            st.rerun()
-    
-    if predict_button and text:
-        with st.spinner("🔄 Analyse en cours..."):
-            progress_bar = st.progress(0)
-            for i in range(100):
-                time.sleep(0.01)
-                progress_bar.progress(i + 1)
-            
-            try:
-                r = requests.post(f"{API_URL}/predict", json={"text": text}, timeout=10)
-                r.raise_for_status()
-                result = r.json()
-                
-                st.success("✅ Analyse terminée avec succès!")
-                
-                # Robust extraction of prediction and confidence from varied API responses
-                prediction_value = None
-                confidence = None
-
-                if isinstance(result, dict):
-                    # possible keys for single prediction
-                    if 'prediction' in result:
-                        prediction_value = result['prediction']
-                    elif 'sentiment' in result:
-                        prediction_value = result['sentiment']
-                    elif 'predictions' in result and isinstance(result['predictions'], (list, tuple)) and len(result['predictions']) > 0:
-                        prediction_value = result['predictions'][0]
-                    elif 'preds' in result and isinstance(result['preds'], (list, tuple)) and len(result['preds']) > 0:
-                        prediction_value = result['preds'][0]
-                    elif 'pred' in result:
-                        prediction_value = result['pred']
-                    elif 'label' in result:
-                        prediction_value = result['label']
-
-                    # extract confidence/score if present
-                    for key in ('confidence', 'score', 'prob', 'probability', 'probabilities'):
-                        if key in result:
-                            confidence = result[key]
-                            break
-                else:
-                    prediction_value = result
-
-                # Normalize prediction_value to canonical string 'positive'/'negative'
+    if analyze_button:
+        if user_input.strip():
+            with st.spinner("🔄 Analyse en cours..."):
                 try:
-                    # numeric labels
-                    import numbers
-                    if isinstance(prediction_value, str) and prediction_value.isdigit():
-                        prediction_value = int(prediction_value)
-                    if isinstance(prediction_value, numbers.Number):
-                        prediction_value = 'positive' if int(prediction_value) == 1 else 'negative'
-                    else:
-                        prediction_value = str(prediction_value).lower()
-                        if prediction_value in ('0', 'false', 'neg', 'negative', 'contre'):
-                            prediction_value = 'negative'
-                        elif prediction_value in ('1', 'true', 'pos', 'positive', 'pour'):
-                            prediction_value = 'positive'
-                except Exception:
-                    prediction_value = str(prediction_value).lower()
-
-                # Normalize confidence to float between 0 and 1
-                try:
-                    if isinstance(confidence, (list, tuple)) and len(confidence) > 0:
-                        confidence = float(confidence[0])
-                    else:
-                        confidence = float(confidence) if confidence is not None else 0.0
-                    # If confidence seems >1, assume it's percentage
-                    if confidence > 1:
-                        confidence = min(confidence / 100.0, 1.0)
-                except Exception:
-                    confidence = 0.0
-
-                if prediction_value == 'positive':
-                    sentiment_fr = 'Pour (Positif)'
-                    sentiment_short = 'Pour'
-                    sentiment_numeric = 1
-                    is_positive = True
-                else:
-                    sentiment_fr = 'Contre (Négatif)'
-                    sentiment_short = 'Contre'
-                    sentiment_numeric = 0
-                    is_positive = False
-                
-                st.session_state.prediction_history.append({
-                    'text': text,
-                    'sentiment': sentiment_short,
-                    'confidence': confidence,
-                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                })
-                
-                st.markdown("---")
-                st.markdown("<h3 style='text-align:center;'>🎯 Résultat de l'Analyse</h3>", unsafe_allow_html=True)
-
-                cols = st.columns([1, 0.6, 1])
-
-                with cols[1]:
-                    if is_positive:
-                        st.markdown(f"""
-                        <div class="prediction-positive" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                            <div style="font-size:2rem;">✅</div>
-                            <div style="font-weight:700;margin-top:0.5rem;">{sentiment_fr}</div>
-                            <div style="font-size:1.05rem;margin-top:0.5rem;">Opinion favorable au candidat/programme</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.markdown(f"""
-                        <div class="prediction-negative" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                            <div style="font-size:2rem;">❌</div>
-                            <div style="font-weight:700;margin-top:0.5rem;">{sentiment_fr}</div>
-                            <div style="font-size:1.05rem;margin-top:0.5rem;">Opinion défavorable au candidat/programme</div>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    # Confidence and detailed breakdown removed per UX request
-                
-            except requests.exceptions.Timeout:
-                st.error("⏱️ Délai d'attente dépassé. Veuillez réessayer.")
-            except requests.exceptions.ConnectionError:
-                st.error("🔌 Erreur de connexion à l'API. Vérifiez que le backend est en cours d'exécution.")
-            except Exception as e:
-                st.error(f"❌ Erreur: {str(e)}")
-
-elif st.session_state.current_page == "Lot":
-    st.markdown("### 📁 Analyse par Lot - Fichier CSV")
-    st.markdown("Téléchargez un fichier CSV contenant une colonne 'text' pour analyser plusieurs commentaires")
-    
-    uploaded = st.file_uploader(
-        "📤 Choisir un fichier CSV",
-        type=["csv"],
-        help="Le fichier doit contenir une colonne nommée 'text'"
-    )
-    
-    if uploaded is not None:
-        try:
-            df = pd.read_csv(uploaded)
-            
-            if 'text' not in df.columns:
-                st.warning("⚠️ Le fichier CSV doit contenir une colonne 'text'")
-            else:
-                st.markdown("---")
-                st.markdown("### 🔄 Traitement en cours...")
-                
-                progress_bar = st.progress(0)
-                status_text = st.empty()
-                status_text.info("⏳ Envoi du fichier au serveur...")
-                
-                try:
-                    # Send as multipart/form-data with filename and content-type so FastAPI
-                    # receives a proper UploadFile (with filename) instead of raw bytes.
-                    files = {'file': (uploaded.name, uploaded.getvalue(), 'text/csv')}
-                    r = requests.post(f"{API_URL}/predict_csv", files=files, timeout=60)
-                    r.raise_for_status()
-                    
-                    progress_bar.progress(100)
-                    status_text.success("✅ Analyse terminée avec succès!")
-                    
-                    st.markdown("---")
-                    st.markdown("### 📥 Télécharger les Résultats")
-                    
-                    st.download_button(
-                        label="⬇️ Télécharger le CSV avec prédictions",
-                        data=r.content,
-                        file_name=f"predictions_{uploaded.name}",
-                        mime="text/csv",
-                        use_container_width=True
+                    response = requests.post(
+                        f"{API_URL}/predict",
+                        json={"text": user_input},
+                        timeout=10
                     )
                     
-                    results_df = pd.read_csv(pd.io.common.BytesIO(r.content))
-                    st.markdown("#### 👀 Aperçu des Résultats")
-                    st.dataframe(results_df.head(10), use_container_width=True)
-                    
-                    if 'sentiment' in results_df.columns or 'prediction' in results_df.columns:
-                        sentiment_col = 'sentiment' if 'sentiment' in results_df.columns else 'prediction'
+                    if response.status_code == 200:
+                        result = response.json()
+                        sentiment = result.get("sentiment", "Unknown")
+                        confidence = result.get("confidence", 0)
                         
-                        results_df['sentiment_mapped'] = results_df[sentiment_col].apply(
-                            lambda x: 'Pour' if str(x) in ['1', 'positive', 'positif', 'pour'] else 'Contre'
-                        )
+                        st.session_state.prediction_history.append({
+                            "text": user_input,
+                            "sentiment": sentiment,
+                            "confidence": confidence,
+                            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                        })
                         
-                        st.markdown("### 📊 Distribution des Sentiments")
+                        st.markdown('<div class="flag-accent"></div>', unsafe_allow_html=True)
                         
-                        sentiment_counts = results_df['sentiment_mapped'].value_counts()
+                        if sentiment == "Pour":
+                            st.markdown(f"""
+                            <div class="prediction-positive">
+                                ✅ Sentiment: <strong>{sentiment}</strong><br>
+                                Score de confiance: <strong>{confidence:.2%}</strong>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            st.markdown(f"""
+                            <div class="prediction-negative">
+                                ❌ Sentiment: <strong>{sentiment}</strong><br>
+                                Score de confiance: <strong>{confidence:.2%}</strong>
+                            </div>
+                            """, unsafe_allow_html=True)
                         
                         col1, col2 = st.columns(2)
                         
                         with col1:
-                            fig_pie = px.pie(
-                                values=sentiment_counts.values,
-                                names=sentiment_counts.index,
-                                title="Répartition Pour/Contre",
-                                color_discrete_sequence=['#38ef7d', '#f45c43']
+                            st.metric(
+                                label="Sentiment Détecté",
+                                value=sentiment,
+                                delta="Positif" if sentiment == "Pour" else "Négatif"
                             )
-                            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-                            st.plotly_chart(fig_pie, use_container_width=True)
                         
                         with col2:
-                            fig_bar = px.bar(
-                                x=sentiment_counts.index,
-                                y=sentiment_counts.values,
-                                title="Nombre par Sentiment",
-                                labels={'x': 'Sentiment', 'y': 'Nombre'},
-                                color=sentiment_counts.index,
-                                color_discrete_sequence=['#38ef7d', '#f45c43']
+                            st.metric(
+                                label="Confiance",
+                                value=f"{confidence:.2%}",
+                                delta=f"{confidence:.2%}"
                             )
-                            st.plotly_chart(fig_bar, use_container_width=True)
-                    
+                        
+                        fig = go.Figure(go.Indicator(
+                            mode="gauge+number+delta",
+                            value=confidence * 100,
+                            domain={'x': [0, 1], 'y': [0, 1]},
+                            title={'text': "Niveau de Confiance", 'font': {'size': 24, 'color': '#2C3E50'}},
+                            delta={'reference': 50, 'increasing': {'color': "#6B7F5C"}},
+                            gauge={
+                                'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "#2C3E50"},
+                                'bar': {'color': "#8B1538"},
+                                'bgcolor': "white",
+                                'borderwidth': 2,
+                                'bordercolor': "#2C3E50",
+                                'steps': [
+                                    {'range': [0, 50], 'color': '#F5E6D3'},
+                                    {'range': [50, 75], 'color': '#D4AF37'},
+                                    {'range': [75, 100], 'color': '#6B7F5C'}
+                                ],
+                                'threshold': {
+                                    'line': {'color': "#8B1538", 'width': 4},
+                                    'thickness': 0.75,
+                                    'value': confidence * 100
+                                }
+                            }
+                        ))
+                        
+                        fig.update_layout(
+                            paper_bgcolor="#F8EDE3",
+                            font={'color': "#2C3E50", 'family': "Arial"}
+                        )
+                        
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        st.success("✅ Analyse terminée avec succès!")
+                    else:
+                        st.error(f"❌ Erreur API: {response.status_code} - {response.text}")
+                
                 except requests.exceptions.Timeout:
-                    st.error("⏱️ Délai d'attente dépassé. Le fichier est peut-être trop volumineux.")
+                    st.error("⏱️ La requête a expiré. Veuillez réessayer.")
+                except requests.exceptions.ConnectionError:
+                    st.error("🔌 Impossible de se connecter au serveur API.")
                 except Exception as e:
-                    st.error(f"❌ Erreur lors de l'analyse: {str(e)}")
+                    st.error(f"❌ Une erreur est survenue: {str(e)}")
+        else:
+            st.warning("⚠️ Veuillez entrer un texte avant d'analyser.")
+
+elif st.session_state.current_page == "Lot":
+    st.markdown("""
+    <div class="main-header">
+        <h1>📁 Analyse par Lot</h1>
+        <p>Analysez plusieurs commentaires simultanément</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box">
+        <h3>📋 Format du fichier CSV</h3>
+        <p>Votre fichier doit contenir une colonne nommée <strong>'text'</strong> avec les commentaires à analyser.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    uploaded_file = st.file_uploader(
+        "Téléchargez votre fichier CSV",
+        type=['csv'],
+        help="Le fichier doit contenir une colonne 'text'"
+    )
+    
+    if uploaded_file is not None:
+        try:
+            df = pd.read_csv(uploaded_file)
+            
+            if 'text' not in df.columns:
+                st.error("❌ Le fichier doit contenir une colonne 'text'")
+            else:
+                st.success(f"✅ Fichier chargé: {len(df)} lignes détectées")
+                
+                st.markdown("### 📊 Aperçu des données")
+                st.dataframe(df.head(10), use_container_width=True)
+                
+                col1, col2, col3 = st.columns([1, 2, 1])
+                
+                with col2:
+                    if st.button("🚀 Lancer l'Analyse par Lot", use_container_width=True):
+                        progress_bar = st.progress(0)
+                        status_text = st.empty()
+                        
+                        results = []
+                        total = len(df)
+                        
+                        for idx, row in df.iterrows():
+                            status_text.text(f"Analyse en cours: {idx + 1}/{total}")
+                            progress_bar.progress((idx + 1) / total)
+                            
+                            try:
+                                response = requests.post(
+                                    f"{API_URL}/predict",
+                                    json={"text": str(row['text'])},
+                                    timeout=10
+                                )
+                                
+                                if response.status_code == 200:
+                                    result = response.json()
+                                    results.append({
+                                        'text': row['text'],
+                                        'sentiment': result.get('sentiment', 'Unknown'),
+                                        'confidence': result.get('confidence', 0)
+                                    })
+                                else:
+                                    results.append({
+                                        'text': row['text'],
+                                        'sentiment': 'Error',
+                                        'confidence': 0
+                                    })
+                            
+                            except Exception as e:
+                                results.append({
+                                    'text': row['text'],
+                                    'sentiment': 'Error',
+                                    'confidence': 0
+                                })
+                            
+                            time.sleep(0.1)
+                        
+                        progress_bar.empty()
+                        status_text.empty()
+                        
+                        results_df = pd.DataFrame(results)
+                        
+                        st.markdown('<div class="flag-accent"></div>', unsafe_allow_html=True)
+                        st.markdown("### 📈 Résultats de l'Analyse")
+                        
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            pour_count = (results_df['sentiment'] == 'Pour').sum()
+                            st.metric("Pour", pour_count, f"{pour_count/len(results_df)*100:.1f}%")
+                        
+                        with col2:
+                            contre_count = (results_df['sentiment'] == 'Contre').sum()
+                            st.metric("Contre", contre_count, f"{contre_count/len(results_df)*100:.1f}%")
+                        
+                        with col3:
+                            avg_conf = results_df['confidence'].mean()
+                            st.metric("Confiance Moyenne", f"{avg_conf:.2%}")
+                        
+                        sentiment_counts = results_df['sentiment'].value_counts()
+                        fig = px.pie(
+                            values=sentiment_counts.values,
+                            names=sentiment_counts.index,
+                            title="Distribution des Sentiments",
+                            color_discrete_map={'Pour': '#6B7F5C', 'Contre': '#8B1538', 'Error': '#D4755B'}
+                        )
+                        fig.update_layout(
+                            paper_bgcolor='#F8EDE3',
+                            plot_bgcolor='#F8EDE3',
+                            font={'color': '#2C3E50', 'size': 14}
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                        
+                        st.markdown("### 📋 Résultats Détaillés")
+                        st.dataframe(results_df, use_container_width=True)
+                        
+                        csv = results_df.to_csv(index=False).encode('utf-8')
+                        st.download_button(
+                            label="📥 Télécharger les Résultats (CSV)",
+                            data=csv,
+                            file_name=f"resultats_analyse_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                            mime="text/csv",
+                            use_container_width=True
+                        )
         
         except Exception as e:
-            st.error(f"❌ Erreur lors de la lecture du fichier: {str(e)}")
+            st.error(f"❌ Erreur lors du chargement du fichier: {str(e)}")
 
 elif st.session_state.current_page == "Stats":
-    st.markdown('<div class="stats-header"><h2>📈 Statistiques et Historique</h2></div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="stats-header">
+        <h2>📊 Statistiques et Historique</h2>
+    </div>
+    """, unsafe_allow_html=True)
     
-    if not st.session_state.prediction_history:
-        st.info("📊 Aucune prédiction enregistrée pour le moment. Effectuez des analyses pour voir les statistiques.")
-    else:
-        history_df = pd.DataFrame(st.session_state.prediction_history)
+    if st.session_state.prediction_history:
+        df_history = pd.DataFrame(st.session_state.prediction_history)
         
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("📊 Total Prédictions", len(history_df))
+            st.metric("Total d'Analyses", len(df_history))
         
         with col2:
-            pour_count = len(history_df[history_df['sentiment'] == 'Pour'])
-            st.metric("✅ Pour (Positif)", pour_count)
+            pour_count = (df_history['sentiment'] == 'Pour').sum()
+            st.metric("Pour", pour_count, f"{pour_count/len(df_history)*100:.1f}%")
         
         with col3:
-            contre_count = len(history_df[history_df['sentiment'] == 'Contre'])
-            st.metric("❌ Contre (Négatif)", contre_count)
+            contre_count = (df_history['sentiment'] == 'Contre').sum()
+            st.metric("Contre", contre_count, f"{contre_count/len(df_history)*100:.1f}%")
+        
+        with col4:
+            avg_confidence = df_history['confidence'].mean()
+            st.metric("Confiance Moyenne", f"{avg_confidence:.2%}")
         
         st.markdown('<div class="flag-accent"></div>', unsafe_allow_html=True)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("#### 🥧 Distribution des Sentiments")
-            sentiment_counts = history_df['sentiment'].value_counts()
-            fig_pie = px.pie(
-                values=sentiment_counts.values,
-                names=sentiment_counts.index,
-                color_discrete_sequence=['#38ef7d', '#f45c43']
+            sentiment_counts = df_history['sentiment'].value_counts()
+            fig1 = px.bar(
+                x=sentiment_counts.index,
+                y=sentiment_counts.values,
+                title="Distribution des Sentiments",
+                labels={'x': 'Sentiment', 'y': 'Nombre'},
+                color=sentiment_counts.index,
+                color_discrete_map={'Pour': '#6B7F5C', 'Contre': '#8B1538'}
             )
-            fig_pie.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(fig_pie, use_container_width=True)
+            fig1.update_layout(
+                paper_bgcolor='#F8EDE3',
+                plot_bgcolor='#FFF',
+                font={'color': '#2C3E50', 'size': 12}
+            )
+            st.plotly_chart(fig1, use_container_width=True)
         
         with col2:
-            st.markdown("#### 📊 Confiance Moyenne par Sentiment")
-            avg_confidence = history_df.groupby('sentiment')['confidence'].mean() * 100
-            fig_bar = px.bar(
-                x=avg_confidence.index,
-                y=avg_confidence.values,
-                title="",
-                labels={'x': 'Sentiment', 'y': 'Confiance (%)'},
-                color=avg_confidence.index,
-                color_discrete_sequence=['#38ef7d', '#f45c43']
+            fig2 = px.histogram(
+                df_history,
+                x='confidence',
+                nbins=20,
+                title="Distribution de la Confiance",
+                labels={'confidence': 'Confiance', 'count': 'Nombre'},
+                color_discrete_sequence=['#8B1538']
             )
-            st.plotly_chart(fig_bar, use_container_width=True)
+            fig2.update_layout(
+                paper_bgcolor='#F8EDE3',
+                plot_bgcolor='#FFF',
+                font={'color': '#2C3E50', 'size': 12}
+            )
+            st.plotly_chart(fig2, use_container_width=True)
         
-        st.markdown('<div class="flag-accent"></div>', unsafe_allow_html=True)
-        
-        st.markdown("#### 📜 Historique des Prédictions")
-        
-        display_df = history_df.copy()
-        display_df['confidence'] = display_df['confidence'].apply(lambda x: f"{x*100:.2f}%")
-        
+        st.markdown("### 📜 Historique des Prédictions")
         st.dataframe(
-            display_df[['timestamp', 'text', 'sentiment', 'confidence']].sort_values('timestamp', ascending=False),
-            use_container_width=True,
-            hide_index=True
+            df_history[['timestamp', 'text', 'sentiment', 'confidence']].sort_values('timestamp', ascending=False),
+            use_container_width=True
         )
         
-        if st.button("🗑️ Effacer l'Historique", type="secondary"):
-            st.session_state.prediction_history = []
-            st.rerun()
+        csv = df_history.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📥 Exporter l'Historique (CSV)",
+            data=csv,
+            file_name=f"historique_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime="text/csv",
+            use_container_width=True
+        )
+        
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("🗑️ Effacer l'Historique", use_container_width=True):
+                st.session_state.prediction_history = []
+                st.rerun()
+    
+    else:
+        st.markdown("""
+        <div class="info-box">
+            <h3>📊 Aucune donnée disponible</h3>
+            <p>Commencez par analyser des textes pour voir les statistiques apparaître ici.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown('<div class="footer-text"><p>🇹🇳 Analyse de Sentiment Tunisien - Plateforme MLOps</p></div>', unsafe_allow_html=True)
 
 st.markdown('<div class="flag-accent"></div>', unsafe_allow_html=True)
 st.markdown("""
