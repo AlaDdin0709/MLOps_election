@@ -429,16 +429,32 @@ def main():
         except Exception as e:
             raise RuntimeError(f"Could not import preprocess module: {e}")
 
-        # Determine data path
-        data_path = Path(args.data_path) if args.data_path else (preprocess.DATA_DIR / 'version1.xlsx')
-        if not data_path.exists():
-            raise FileNotFoundError(f"Data file not found: {data_path}")
+        # Determine data path: Combine all version*.xlsx found in DATA_DIR
+        data_files = sorted(list(preprocess.DATA_DIR.glob('version*.xlsx')))
+        
+        if not data_files:
+            # Fallback for older structures
+            data_path = Path(args.data_path) if args.data_path else (preprocess.DATA_DIR / 'version1.xlsx')
+            if not data_path.exists():
+                raise FileNotFoundError(f"No data files found in {preprocess.DATA_DIR}")
+            data_files = [data_path]
+            print(f"📦 Utilisation du fichier unique : {data_path.name}")
+        else:
+            print(f"📦 Retraining cumulatif : Utilisation de {len(data_files)} versions ({', '.join(f.name for f in data_files)})")
 
-        # Run preprocessing functions in-memory
-        print("\n" + "="*80)
-        print("🧪 PREPROCESSING - Integrated in Training Pipeline")
-        print("="*80)
-        df = preprocess.load_and_explore_data(data_path)
+        # Load and combine all dataframes
+        dfs = [preprocess.load_and_explore_data(f) for f in data_files]
+        df = pd.concat(dfs, ignore_index=True)
+        
+        # Security: Remove duplicates if the user used cumulative files
+        initial_count = len(df)
+        df = df.drop_duplicates(subset=['comments']) 
+        if len(df) < initial_count:
+            print(f"🧹 Doublons supprimés : {initial_count - len(df)} lignes (fichiers probablement cumulatifs)")
+
+
+        # Run preprocessing
+        print(f"📊 Total des lignes uniques pour entraînement : {len(df)}")
         df = preprocess.preprocess_text(df, text_col='comments')
         X, vectorizer = preprocess.vectorize_text(df, text_col='cleaned', max_features=5000)
         y = df['target'].values
