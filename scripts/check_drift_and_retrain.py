@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
-SPACE_ID = os.getenv('ARIZE_SPACE_KEY')
+SPACE_ID = os.getenv('ARIZE_SPACE_ID') or os.getenv('ARIZE_SPACE_KEY')
 API_KEY = os.getenv('ARIZE_API_KEY')
 GRAPHQL_ENDPOINT = "https://app.arize.com/graphql"
 
@@ -65,18 +65,28 @@ def check_drift_and_exit():
                 target_model = next((m for m in models if m['name'] == "election_sentiment_tunisia"), None)
                 
                 if target_model:
-                    status = target_model.get('driftStatus', {}).get('status')
+                    status = (target_model.get('driftStatus', {}).get('status') or "").upper()
                     print(f"📊 Statut Drift actuel : {status}")
                     
-                    if status in ["DEVIATING", "ACTIVE", "STABLE"]: # On accepte ces statuts
+                    if status in ["DEVIATING", "ACTIVE", "STABLE", "HEALTHY"]:
                         if status == "DEVIATING":
                             print("🚨 DRIFT DÉTECTÉ ! Déclenchement du réentraînement...")
                             sys.exit(1)
                         else:
                             print(f"✅ État sain ({status}). Pas de réentraînement nécessaire.")
                             sys.exit(0)
+                    elif status == "unmonitored":
+                        print("\n⚠️  MODE 'UNMONITORED' DÉTECTÉ")
+                        print("👉 Arize a bien tes données, mais tu n'as pas encore créé de 'Monitor'.")
+                        print("👉 Sans Monitor, Arize ne peut pas 'décider' s'il y a une dérive.")
+                        print("\n🛠️  ACTION REQUISE :")
+                        print(f"1. Va ici : https://app.arize.com/organizations/ (cherche ton modèle)")
+                        print("2. Onglet 'Monitors' -> 'Create Monitor' -> 'Drift'")
+                        print("3. Sélectionne la feature 'comments' et valide.")
+                        print("\nUne fois le Monitor créé, ce script pourra voter STABLE ou DEVIATING. 🚀")
+                        sys.exit(0) # On sort proprement pour ne pas bloquer la CI
                 
-            print(f"⏳ Statut encore 'unmonitored' ou calcul en cours. Attente de {wait_time}s...")
+            print(f"⏳ Calcul en cours chez Arize. Attente de {wait_time}s...")
             if i < retries - 1:
                 time.sleep(wait_time)
         except Exception as e:
@@ -84,7 +94,7 @@ def check_drift_and_exit():
             if i < retries - 1:
                 time.sleep(wait_time)
 
-    print("⚠️ Arize n'a pas mis à jour le statut à temps. Skip training par sécurité.")
+    print("⚠️ Arize n'a pas mis à jour le statut à temps ou le modèle est mal configuré.")
     sys.exit(0)
 
 if __name__ == "__main__":
