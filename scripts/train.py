@@ -127,20 +127,21 @@ def get_ml_models():
     """Retourne la configuration des modèles ML"""
     models = {
         'Neural_Network': MLPClassifier(
-            hidden_layer_sizes=(10, 10),
-            activation='logistic',
+            hidden_layer_sizes=(100, 50),
+            activation='relu',
             solver='adam',
-            max_iter=500,
+            max_iter=1000,
+            batch_size=32,
             random_state=42
         ),
         'Logistic_Regression': LogisticRegression(
             solver='liblinear',
             class_weight='balanced',
-            max_iter=1000,
+            max_iter=2000,
             random_state=42
         ),
         'Random_Forest': RandomForestClassifier(
-            n_estimators=200,
+            n_estimators=500,
             max_depth=None,
             n_jobs=-1,
             class_weight='balanced',
@@ -160,9 +161,9 @@ def get_ml_models():
     
     if HAS_XGB:
         models['XGBoost'] = XGBClassifier(
-            n_estimators=300,
-            learning_rate=0.1,
-            max_depth=6,
+            n_estimators=600,
+            learning_rate=0.05,
+            max_depth=8,
             subsample=0.8,
             colsample_bytree=0.8,
             reg_lambda=1.0,
@@ -207,7 +208,7 @@ def train_ml_models(X_train, X_test, y_train, y_test, vectorizer=None):
     trained_models = {}
     failed_models = []
     best_run_id = None
-    best_accuracy = -1
+    best_precision = -1
     
     for model_name, model in models.items():
         print(f"\n🔄 Entraînement: {model_name}")
@@ -341,11 +342,11 @@ def train_ml_models(X_train, X_test, y_train, y_test, vectorizer=None):
                 })
                 
                 # Track best run for later
-                if metrics['accuracy'] > best_accuracy:
-                    best_accuracy = metrics['accuracy']
+                if metrics['precision'] > best_precision:
+                    best_precision = metrics['precision']
                     best_run_id = mlflow.active_run().info.run_id
                 
-                print(f"   ✅ Terminé - Acc: {metrics['accuracy']:.4f} ({training_time:.2f}s)")
+                print(f"   ✅ Terminé - Prec: {metrics['precision']:.4f} ({training_time:.2f}s)")
                 
             except Exception as e:
                 print(f"   ❌ Erreur: {e}")
@@ -386,7 +387,7 @@ def save_results_summary(results):
     print("="*80)
     
     df_results = pd.DataFrame(results)
-    df_results = df_results.sort_values('accuracy', ascending=False)
+    df_results = df_results.sort_values('precision', ascending=False)
     
     print(df_results.to_string(index=False))
     
@@ -398,8 +399,8 @@ def save_results_summary(results):
     # Meilleur modèle
     best = df_results.iloc[0]
     print(f"\n🏆 MEILLEUR MODÈLE: {best['Model']}")
+    print(f"   Precision: {best['precision']:.4f}")
     print(f"   Accuracy: {best['accuracy']:.4f}")
-    print(f"   F1-Score: {best['f1_score']:.4f}")
     
     return df_results
 
@@ -456,7 +457,7 @@ def main():
         # Run preprocessing
         print(f"📊 Total des lignes uniques pour entraînement : {len(df)}")
         df = preprocess.preprocess_text(df, text_col='comments')
-        X, vectorizer = preprocess.vectorize_text(df, text_col='cleaned', max_features=5000)
+        X, vectorizer = preprocess.vectorize_text(df, text_col='cleaned', max_features=10000)
         y = df['target'].values
         X_train, X_val, X_test, y_train, y_val, y_test = preprocess.split_data(X, y, test_size=0.15, val_size=0.15, random_state=42)
         

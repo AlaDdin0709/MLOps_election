@@ -322,6 +322,13 @@ st.markdown("""
         background: #FFFFFF;
     }
     
+    .stTextArea label {
+        color: #2C3E50 !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+
     .stTextArea textarea:focus {
         border-color: #D4AF37;
         box-shadow: 0 5px 20px rgba(212, 175, 55, 0.25);

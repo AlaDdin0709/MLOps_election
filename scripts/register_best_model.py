@@ -47,10 +47,10 @@ def download_from_run(client, run_id):
     # Get run info
     run = client.get_run(run_id)
     model_name = run.data.params.get('model_type', 'Unknown')
-    accuracy = run.data.metrics.get('accuracy', 0)
+    precision = run.data.metrics.get('precision', 0)
     
     print(f"   Model: {model_name}")
-    print(f"   Accuracy: {accuracy:.4f}")
+    print(f"   Precision: {precision:.4f}")
     
     # List all artifacts
     print("\n📋 Listing artifacts...")
@@ -191,8 +191,8 @@ def main():
     try:
         df = mlflow.search_runs(
             experiment_ids=[exp.experiment_id],
-            filter_string="metrics.accuracy > 0",
-            order_by=["metrics.accuracy DESC", "start_time DESC"],  # Best accuracy first, then recent
+            filter_string="metrics.precision > 0",
+            order_by=["metrics.precision DESC", "start_time DESC"],  # Best precision first, then recent
             max_results=10
         )
     except Exception as e:
